@@ -256,7 +256,7 @@ export function NewCaseModal({ isOpen, onClose }: NewCaseModalProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {caseTypes.map((type: any) => (
+                        {caseTypes.map((type: CaseType) => (
                           <SelectItem key={type.id} value={type.id.toString()}>
                             {type.name}
                           </SelectItem>
@@ -281,7 +281,7 @@ export function NewCaseModal({ isOpen, onClose }: NewCaseModalProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {studioRoles.map((role: any) => (
+                        {studioRoles.map((role: StudioRole) => (
                           <SelectItem key={role.id} value={role.id.toString()}>
                             {role.name}
                           </SelectItem>
@@ -308,7 +308,7 @@ export function NewCaseModal({ isOpen, onClose }: NewCaseModalProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {courts.map((court: any) => (
+                        {courts.map((court: Court) => (
                           <SelectItem key={court.id} value={court.id.toString()}>
                             {court.name}
                           </SelectItem>
@@ -333,7 +333,7 @@ export function NewCaseModal({ isOpen, onClose }: NewCaseModalProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {users.map((user: any) => (
+                        {users.map((user: User) => (
                           <SelectItem key={user.id} value={user.id.toString()}>
                             {user.firstName} {user.lastName}
                           </SelectItem>
