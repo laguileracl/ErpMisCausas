@@ -1294,6 +1294,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Health check endpoint for deployment platforms
+  app.get("/api/health", (req, res) => {
+    res.json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      version: "1.0.0",
+      environment: process.env.NODE_ENV || "development",
+      database: process.env.DATABASE_URL ? "connected" : "not configured"
+    });
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
