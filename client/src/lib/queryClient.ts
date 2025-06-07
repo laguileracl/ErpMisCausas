@@ -13,9 +13,8 @@ const getApiUrl = (url: string): string => {
     return url;
   }
   
-  // In production, use Railway API
-  const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://erp-miscausas-production.up.railway.app';
-  return url.startsWith('/api') ? `${apiBaseUrl}${url}` : url;
+  // In production, use Vercel API functions
+  return url;
 };
 
 export async function apiRequest(
@@ -36,6 +35,8 @@ export async function apiRequest(
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
+
+
 export const getQueryFn: <T>(options: {
   on401: UnauthorizedBehavior;
 }) => QueryFunction<T> =

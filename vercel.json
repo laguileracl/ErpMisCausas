@@ -3,6 +3,17 @@
   "outputDirectory": "client/dist",
   "installCommand": "npm install",
   "framework": "vite",
+  "functions": {
+    "api/auth/login.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    }
+  ],
   "env": {
     "VITE_API_URL": "https://erp-miscausas-production.up.railway.app"
   }

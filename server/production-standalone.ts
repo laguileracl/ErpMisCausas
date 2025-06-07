@@ -194,12 +194,9 @@ async function registerRoutes(app: express.Express): Promise<Server> {
 
   // Use PORT environment variable for production deployment or default to 5000
   const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
+  server.listen(port, "0.0.0.0", () => {
     console.log(`Production server running on port ${port}`);
-    console.log(`Health endpoint: http://localhost:${port}/health`);
+    console.log(`Health endpoint: http://0.0.0.0:${port}/health`);
+    console.log(`Environment: ${process.env.NODE_ENV}`);
   });
 })();
