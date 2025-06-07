@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 interface TopBarProps {
   onNewCase: () => void;
@@ -42,10 +43,7 @@ export function TopBar({ onNewCase }: TopBarProps) {
             Nueva Causa
           </Button>
           
-          <button className="relative p-2 text-secondary-400 hover:text-secondary-600 rounded-lg hover:bg-gray-50">
-            <i className="fas fa-bell text-lg"></i>
-            <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500"></span>
-          </button>
+          <NotificationBell />
 
           <div className="relative">
             <Input

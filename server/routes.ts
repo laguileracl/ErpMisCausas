@@ -808,6 +808,210 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===== NOTIFICATION ROUTES =====
+  
+  // Get user notifications
+  app.get("/api/notifications", authenticateUser, async (req: any, res) => {
+    try {
+      const { unreadOnly, limit = 50, offset = 0 } = req.query;
+      const notifications = await notificationService.getUserNotifications(req.user.id, {
+        unreadOnly: unreadOnly === "true",
+        limit: parseInt(limit as string),
+        offset: parseInt(offset as string),
+      });
+      res.json(notifications);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener notificaciones", error });
+    }
+  });
+
+  // Mark notification as read
+  app.put("/api/notifications/:id/read", authenticateUser, async (req: any, res) => {
+    try {
+      const notificationId = parseInt(req.params.id);
+      await notificationService.markAsRead(notificationId, req.user.id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Error al marcar notificación como leída", error });
+    }
+  });
+
+  // Mark all notifications as read
+  app.put("/api/notifications/read-all", authenticateUser, async (req: any, res) => {
+    try {
+      await notificationService.markAllAsRead(req.user.id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Error al marcar todas las notificaciones como leídas", error });
+    }
+  });
+
+  // Get user notification preferences
+  app.get("/api/notification-preferences", authenticateUser, async (req: any, res) => {
+    try {
+      const preferences = await notificationService.getUserPreferences(req.user.id);
+      res.json(preferences);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener preferencias de notificación", error });
+    }
+  });
+
+  // Update notification preferences
+  app.put("/api/notification-preferences/:type", authenticateUser, async (req: any, res) => {
+    try {
+      const notificationType = req.params.type;
+      const preferences = insertUserNotificationPreferenceSchema.partial().parse(req.body);
+      await notificationService.updatePreferences(req.user.id, notificationType, preferences);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Error al actualizar preferencias", error });
+    }
+  });
+
+  // Create notification (for manual triggers)
+  app.post("/api/notifications", authenticateUser, async (req: any, res) => {
+    try {
+      const notificationData = insertNotificationSchema.parse(req.body);
+      const notification = await notificationService.createNotification(notificationData);
+      res.status(201).json(notification);
+    } catch (error) {
+      res.status(400).json({ message: "Error al crear notificación", error });
+    }
+  });
+
+  // ===== SECURITY ROUTES =====
+
+  // Enhanced login with security features
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { username, password } = loginSchema.parse(req.body);
+      const ipAddress = req.ip || req.connection.remoteAddress;
+      const userAgent = req.get("User-Agent");
+
+      const authResult = await securityService.authenticateUser(username, password, ipAddress, userAgent);
+
+      if (!authResult.success) {
+        return res.status(401).json({ 
+          message: authResult.error,
+          lockoutUntil: authResult.lockoutUntil 
+        });
+      }
+
+      // Set session
+      req.session.userId = authResult.user!.id;
+      req.session.sessionToken = authResult.session!.sessionToken;
+
+      res.json({ 
+        message: "Inicio de sesión exitoso", 
+        user: authResult.user,
+        sessionToken: authResult.session!.sessionToken
+      });
+    } catch (error) {
+      res.status(400).json({ message: "Error en el inicio de sesión", error });
+    }
+  });
+
+  // Change password
+  app.post("/api/auth/change-password", authenticateUser, async (req: any, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      const ipAddress = req.ip || req.connection.remoteAddress;
+      const userAgent = req.get("User-Agent");
+
+      const result = await securityService.changePassword(
+        req.user.id, 
+        currentPassword, 
+        newPassword, 
+        ipAddress, 
+        userAgent
+      );
+
+      if (!result.success) {
+        return res.status(400).json({ message: result.error });
+      }
+
+      res.json({ message: "Contraseña cambiada exitosamente" });
+    } catch (error) {
+      res.status(500).json({ message: "Error al cambiar contraseña", error });
+    }
+  });
+
+  // Get user security logs
+  app.get("/api/security/logs", authenticateUser, async (req: any, res) => {
+    try {
+      const { limit = 50, offset = 0 } = req.query;
+      const logs = await securityService.getUserSecurityLogs(
+        req.user.id, 
+        parseInt(limit as string), 
+        parseInt(offset as string)
+      );
+      res.json(logs);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener logs de seguridad", error });
+    }
+  });
+
+  // Get security stats (admin only)
+  app.get("/api/security/stats", authenticateUser, async (req: any, res) => {
+    try {
+      // Check if user is admin (you may need to adjust this based on your role system)
+      if (req.user.roleId !== 1) {
+        return res.status(403).json({ message: "Acceso denegado" });
+      }
+
+      const stats = await securityService.getSecurityStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener estadísticas de seguridad", error });
+    }
+  });
+
+  // Validate session endpoint
+  app.get("/api/auth/validate-session", async (req, res) => {
+    try {
+      const sessionToken = req.session?.sessionToken;
+      if (!sessionToken) {
+        return res.status(401).json({ message: "No hay sesión activa" });
+      }
+
+      // Check session timeout
+      const isTimedOut = await securityService.checkSessionTimeout(sessionToken);
+      if (isTimedOut) {
+        req.session.destroy(() => {});
+        return res.status(401).json({ message: "Sesión expirada por inactividad" });
+      }
+
+      const authResult = await securityService.validateSession(sessionToken);
+      if (!authResult.success) {
+        req.session.destroy(() => {});
+        return res.status(401).json({ message: authResult.error });
+      }
+
+      res.json({ 
+        message: "Sesión válida", 
+        user: authResult.user 
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error al validar sesión", error });
+    }
+  });
+
+  // Logout with session cleanup
+  app.post("/api/auth/logout", authenticateUser, async (req: any, res) => {
+    try {
+      const sessionToken = req.session?.sessionToken;
+      if (sessionToken) {
+        await securityService.invalidateSession(sessionToken);
+      }
+
+      req.session.destroy(() => {
+        res.json({ message: "Sesión cerrada exitosamente" });
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error al cerrar sesión", error });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
