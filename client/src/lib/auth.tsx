@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const contextValue: AuthContextType = {
-    user: user || null,
+    user: user as User | null,
     isLoading,
     login,
     logout
