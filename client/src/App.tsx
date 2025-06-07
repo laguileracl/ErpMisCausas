@@ -9,6 +9,7 @@ import Dashboard from "@/pages/dashboard";
 import Clientes from "@/pages/clientes";
 import Empresas from "@/pages/empresas";
 import Contactos from "@/pages/contactos";
+import Causas from "@/pages/causas";
 import { useAuth, AuthProvider } from "@/lib/auth";
 
 function Router() {
@@ -41,6 +42,7 @@ function Router() {
       <Route path="/clientes" component={Clientes} />
       <Route path="/empresas" component={Empresas} />
       <Route path="/contactos" component={Contactos} />
+      <Route path="/causas" component={Causas} />
       <Route component={NotFound} />
     </Switch>
   );

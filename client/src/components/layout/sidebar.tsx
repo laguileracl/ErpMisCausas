@@ -11,7 +11,7 @@ export function Sidebar() {
       badge: null,
     },
     {
-      href: "/cases",
+      href: "/causas",
       icon: "fas fa-gavel",
       label: "Causas Judiciales",
       badge: "12",

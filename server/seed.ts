@@ -5,6 +5,49 @@ async function seed() {
   try {
     console.log("Iniciando seed de la base de datos...");
 
+  // Crear datos base para causas judiciales
+  // Tipos de causa
+  const caseTypesData = [
+    { name: "Civil", description: "Causas civiles generales" },
+    { name: "Penal", description: "Causas penales" },
+    { name: "Laboral", description: "Causas laborales y de trabajo" },
+    { name: "Familiar", description: "Causas de derecho de familia" },
+    { name: "Comercial", description: "Causas comerciales y mercantiles" },
+    { name: "Tributario", description: "Causas tributarias y fiscales" },
+  ];
+
+  // Roles del estudio
+  const studioRolesData = [
+    { name: "Abogado Patrocinante", description: "Representación legal principal" },
+    { name: "Abogado Procurador", description: "Representación procesal" },
+    { name: "Consultor Legal", description: "Asesoría legal especializada" },
+    { name: "Perito", description: "Pericia técnica especializada" },
+  ];
+
+  // Tribunales
+  const courtsData = [
+    { name: "1° Juzgado Civil de Santiago", city: "Santiago", region: "Metropolitana", type: "civil" },
+    { name: "2° Juzgado Civil de Santiago", city: "Santiago", region: "Metropolitana", type: "civil" },
+    { name: "Juzgado de Garantía de Santiago", city: "Santiago", region: "Metropolitana", type: "penal" },
+    { name: "1° Juzgado de Familia de Santiago", city: "Santiago", region: "Metropolitana", type: "familia" },
+    { name: "Juzgado del Trabajo de Santiago", city: "Santiago", region: "Metropolitana", type: "laboral" },
+  ];
+
+  console.log("Creando tipos de causa...");
+  for (const caseTypeData of caseTypesData) {
+    await db.insert(caseTypes).values(caseTypeData);
+  }
+
+  console.log("Creando roles del estudio...");
+  for (const studioRoleData of studioRolesData) {
+    await db.insert(studioRoles).values(studioRoleData);
+  }
+
+  console.log("Creando tribunales...");
+  for (const courtData of courtsData) {
+    await db.insert(courts).values(courtData);
+  }
+
     // Crear rol admin
     const [adminRole] = await db.insert(roles).values({
       name: "Administrador",
