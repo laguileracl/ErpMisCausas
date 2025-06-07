@@ -1,0 +1,46 @@
+Quiero que me ayudes a crear un sistema ERP jurídico avanzado para mi estudio jurídico MisCausas.cl
+
+El sistema tendrá una única base de datos relacional (PostgreSQL) altamente normalizada.
+
+Stack tecnológico deseado:
+- Backend: Python + FastAPI + SQLAlchemy
+- Base de Datos: PostgreSQL
+- Frontend: React + Ant Design (o Material UI)
+- Generación de documentos: Jinja2 + WeasyPrint
+- Seguridad: OAuth2 + JWT
+- Importación masiva de datos: CSV con validación
+
+Este sistema debe ser capaz de gestionar:
+
+1. Usuarios del sistema (empleados del estudio jurídico), con roles y permisos configurables.
+2. Clientes, que pueden ser personas naturales o empresas/comunidades.
+   - En caso de empresas/comunidades, los contactos de estas deben poder ser gestionados y tener roles en múltiples empresas.
+3. Proveedores del estudio jurídico.
+4. Tribunales (catálogo de tribunales chilenos).
+5. Causas judiciales (denominadas "negocios" en el sistema), con:
+   - Tipo de causa (laboral, tributario, concursal, civil, etc.), que define la estructura de seguimiento (etapas, plazos, tareas).
+   - Rol del estudio jurídico en la causa (representante de demandante, liquidador, tercero, causa propia, etc.).
+   - Roles de los clientes/contactos/empresas en cada causa (demandante, demandado, tercero, acreedor, abogado, ministro de fe, etc.).
+   - Asociación con uno o más tribunales.
+   - Documentos generados y asociados a la causa.
+   - Registro de actividades (llamadas, correos, WhatsApp, reuniones, escritos, tareas).
+   - Sistema de tareas y alarmas automáticas con calendario.
+
+El sistema también deberá permitir:
+
+- Importación masiva de datos de clientes, empresas, contactos, proveedores y causas judiciales mediante plantillas CSV.
+- Generación automática de documentos judiciales a partir de plantillas personalizables en Jinja2, generados en PDF.
+- Registro completo de accesos y acciones de los usuarios (auditoría).
+- Dashboard de tareas pendientes y calendario visual.
+
+Mi objetivo es que me ayudes a crear este sistema paso a paso.
+
+Primero quiero que me generes:
+
+1. Un diagrama de entidades y relaciones (ER) inicial para este sistema.
+2. El código SQLAlchemy para definir las tablas de la base de datos, totalmente en español (todos los nombres de campos y tablas deben estar en español).
+3. Una API básica de FastAPI que permita crear, leer, actualizar y eliminar registros de estas entidades.
+
+Después de eso te iré pidiendo que vayamos construyendo los siguientes módulos de forma iterativa.
+
+Por favor, pregunta cualquier cosa que necesites antes de empezar para asegurar que la generación sea óptima.

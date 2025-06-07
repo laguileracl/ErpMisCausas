@@ -1,0 +1,44 @@
+Entiendo y acepto la propuesta de crear un MVP utilizando Flask, SQLite y autenticación básica para comenzar.
+
+Sin embargo, es MUY importante que se respete la estructura completa de entidades y relaciones que te indiqué, porque el objetivo es que luego este sistema pueda migrarse fácilmente a FastAPI y PostgreSQL para producción.
+
+Por lo tanto, por favor sigue estos pasos en este orden:
+
+1. **Genera primero un diagrama de entidades y relaciones (ER)** completo para este sistema, utilizando nombres de tablas y campos en ESPAÑOL. Esto es fundamental para la claridad del modelo de datos.
+
+2. Luego, **genera los modelos de base de datos usando SQLAlchemy**, también con nombres de tablas y campos en español.
+
+3. Después, genera una **API REST básica en Flask**, que permita realizar operaciones CRUD (crear, leer, actualizar, eliminar) sobre las siguientes entidades principales:
+
+   - Usuario
+   - Rol de Usuario
+   - Cliente (que puede ser persona natural o empresa/comunidad)
+   - Empresa
+   - Contacto (persona vinculada a empresas o comunidades)
+   - Proveedor
+   - Tribunal
+   - Causa Judicial (denominada "Negocio" en el sistema)
+   - Rol en la Causa (rol de clientes/contactos/empresas en cada causa)
+   - Rol del Estudio en la Causa
+   - Tipo de Causa
+   - Etapa / Plazo / Actividad
+   - Documento generado
+   - Comentario / Registro de actividad
+   - Tarea / Alarma
+   - Acceso / Log de actividad (para registro de auditoría)
+
+Notas importantes:
+
+- Todos los nombres de tablas, modelos, campos y endpoints deben estar en ESPAÑOL, no en inglés.
+- El código debe ser modular y bien estructurado, para facilitar su futura migración a FastAPI + PostgreSQL.
+- Debe mantenerse la relación de **clientes, empresas y contactos**, permitiendo que un contacto pueda pertenecer a múltiples empresas.
+- Las causas judiciales deben poder reflejar:
+  - los diferentes roles de las partes en la causa,
+  - el rol del estudio jurídico,
+  - el tipo de causa que determina su estructura de seguimiento (etapas, plazos, tareas),
+  - asociación a uno o más tribunales,
+  - documentos asociados,
+  - comentarios y registros de actividades,
+  - tareas y alarmas.
+
+Por favor confirma que puedes proceder de esta manera y genera primero el paso 1 (diagrama de entidades y relaciones ER completo en español).
