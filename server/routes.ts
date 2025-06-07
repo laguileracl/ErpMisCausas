@@ -1,6 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage-minimal";
+import multer from "multer";
+import { parse } from "csv-parse/sync";
+import { stringify } from "csv-stringify/sync";
 import { 
   insertUserSchema, insertClientSchema, insertCompanySchema, insertContactSchema,
   insertProviderSchema, insertCourtSchema, insertCaseTypeSchema, insertStudioRoleSchema,
@@ -9,6 +12,12 @@ import {
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // Configure multer for file uploads
+  const upload = multer({ 
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+  });
   
   // Authentication middleware
   const authenticateUser = async (req: any, res: any, next: any) => {
@@ -543,6 +552,256 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(logs);
     } catch (error) {
       res.status(500).json({ message: "Error al obtener logs de auditoría", error });
+    }
+  });
+
+  // CSV Import/Export routes
+  app.post("/api/import/clients", authenticateUser, upload.single('file'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No se encontró archivo CSV" });
+      }
+
+      const csvData = req.file.buffer.toString('utf-8');
+      const records = parse(csvData, { columns: true, skip_empty_lines: true });
+      
+      const results = { success: 0, errors: [] as any[] };
+      
+      for (const record of records) {
+        try {
+          const clientData = {
+            name: record.name || record.nombre,
+            type: record.type || record.tipo || 'individual',
+            rut: record.rut,
+            email: record.email || null,
+            phone: record.phone || record.telefono || null,
+            address: record.address || record.direccion || null,
+            city: record.city || record.ciudad || null,
+            region: record.region || null,
+            notes: record.notes || record.notas || null,
+            legalRepresentative: record.legalRepresentative || record.representanteLegal || null,
+            isActive: record.isActive !== 'false' && record.activo !== 'false'
+          };
+
+          const client = await storage.createClient(clientData);
+          await logAction(req.user.id, 'create', 'client', client.id, null, client);
+          results.success++;
+        } catch (error: any) {
+          results.errors.push({ 
+            row: record, 
+            error: error.message 
+          });
+        }
+      }
+
+      res.json(results);
+    } catch (error) {
+      res.status(500).json({ message: "Error al procesar archivo CSV", error });
+    }
+  });
+
+  app.post("/api/import/companies", authenticateUser, upload.single('file'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No se encontró archivo CSV" });
+      }
+
+      const csvData = req.file.buffer.toString('utf-8');
+      const records = parse(csvData, { columns: true, skip_empty_lines: true });
+      
+      const results = { success: 0, errors: [] as any[] };
+      
+      for (const record of records) {
+        try {
+          const companyData = {
+            name: record.name || record.nombre,
+            type: record.type || record.tipo || 'empresa',
+            rut: record.rut,
+            email: record.email || null,
+            phone: record.phone || record.telefono || null,
+            address: record.address || record.direccion || null,
+            city: record.city || record.ciudad || null,
+            region: record.region || null,
+            notes: record.notes || record.notas || null,
+            legalRepresentative: record.legalRepresentative || record.representanteLegal || null,
+            isActive: record.isActive !== 'false' && record.activo !== 'false'
+          };
+
+          const company = await storage.createCompany(companyData);
+          await logAction(req.user.id, 'create', 'company', company.id, null, company);
+          results.success++;
+        } catch (error: any) {
+          results.errors.push({ 
+            row: record, 
+            error: error.message 
+          });
+        }
+      }
+
+      res.json(results);
+    } catch (error) {
+      res.status(500).json({ message: "Error al procesar archivo CSV", error });
+    }
+  });
+
+  app.post("/api/import/contacts", authenticateUser, upload.single('file'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No se encontró archivo CSV" });
+      }
+
+      const csvData = req.file.buffer.toString('utf-8');
+      const records = parse(csvData, { columns: true, skip_empty_lines: true });
+      
+      const results = { success: 0, errors: [] as any[] };
+      
+      for (const record of records) {
+        try {
+          const contactData = {
+            firstName: record.firstName || record.nombre,
+            lastName: record.lastName || record.apellido,
+            email: record.email || null,
+            phone: record.phone || record.telefono || null,
+            position: record.position || record.cargo || null,
+            notes: record.notes || record.notas || null,
+            companyId: record.companyId ? parseInt(record.companyId) : null,
+            isActive: record.isActive !== 'false' && record.activo !== 'false'
+          };
+
+          const contact = await storage.createContact(contactData);
+          await logAction(req.user.id, 'create', 'contact', contact.id, null, contact);
+          results.success++;
+        } catch (error: any) {
+          results.errors.push({ 
+            row: record, 
+            error: error.message 
+          });
+        }
+      }
+
+      res.json(results);
+    } catch (error) {
+      res.status(500).json({ message: "Error al procesar archivo CSV", error });
+    }
+  });
+
+  // CSV Template downloads
+  app.get("/api/templates/clients", authenticateUser, async (req: any, res) => {
+    const template = [
+      ['name', 'type', 'rut', 'email', 'phone', 'address', 'city', 'region', 'notes', 'legalRepresentative', 'isActive'],
+      ['Juan Pérez', 'individual', '12345678-9', 'juan@email.com', '+56912345678', 'Av. Principal 123', 'Santiago', 'Metropolitana', 'Cliente VIP', 'Juan Pérez', 'true'],
+      ['María García', 'individual', '98765432-1', 'maria@email.com', '+56987654321', 'Calle Secundaria 456', 'Valparaíso', 'Valparaíso', '', 'María García', 'true']
+    ];
+    
+    const csv = stringify(template);
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="plantilla_clientes.csv"');
+    res.send(csv);
+  });
+
+  app.get("/api/templates/companies", authenticateUser, async (req: any, res) => {
+    const template = [
+      ['name', 'type', 'rut', 'email', 'phone', 'address', 'city', 'region', 'notes', 'legalRepresentative', 'isActive'],
+      ['Empresa ABC Ltda.', 'empresa', '76123456-7', 'contacto@abc.cl', '+56222345678', 'Av. Empresarial 789', 'Santiago', 'Metropolitana', 'Cliente corporativo', 'Carlos López', 'true'],
+      ['Constructora XYZ S.A.', 'constructora', '96234567-8', 'info@xyz.cl', '+56233456789', 'Calle Industrial 321', 'Concepción', 'Biobío', 'Sector construcción', 'Ana Martínez', 'true']
+    ];
+    
+    const csv = stringify(template);
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="plantilla_empresas.csv"');
+    res.send(csv);
+  });
+
+  app.get("/api/templates/contacts", authenticateUser, async (req: any, res) => {
+    const template = [
+      ['firstName', 'lastName', 'email', 'phone', 'position', 'notes', 'companyId', 'isActive'],
+      ['Pedro', 'Rodríguez', 'pedro@abc.cl', '+56912345678', 'Gerente General', 'Contacto principal', '1', 'true'],
+      ['Carmen', 'Silva', 'carmen@xyz.cl', '+56987654321', 'Jefa de Proyectos', 'Contacto técnico', '2', 'true']
+    ];
+    
+    const csv = stringify(template);
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="plantilla_contactos.csv"');
+    res.send(csv);
+  });
+
+  // Reports and Analytics routes
+  app.get("/api/reports/cases-by-type", authenticateUser, async (req: any, res) => {
+    try {
+      const cases = await storage.getAllLegalCases();
+      const caseTypes = await storage.getAllCaseTypes();
+      
+      const typeCount = cases.reduce((acc: any, legalCase: any) => {
+        const typeId = legalCase.caseTypeId;
+        const type = caseTypes.find((t: any) => t.id === typeId);
+        const typeName = type ? type.name : 'Sin tipo';
+        acc[typeName] = (acc[typeName] || 0) + 1;
+        return acc;
+      }, {});
+
+      res.json(typeCount);
+    } catch (error) {
+      res.status(500).json({ message: "Error al generar reporte", error });
+    }
+  });
+
+  app.get("/api/reports/cases-by-court", authenticateUser, async (req: any, res) => {
+    try {
+      const cases = await storage.getAllLegalCases();
+      const courts = await storage.getAllCourts();
+      
+      const courtCount = cases.reduce((acc: any, legalCase: any) => {
+        const courtId = legalCase.courtId;
+        const court = courts.find((c: any) => c.id === courtId);
+        const courtName = court ? court.name : 'Sin tribunal';
+        acc[courtName] = (acc[courtName] || 0) + 1;
+        return acc;
+      }, {});
+
+      res.json(courtCount);
+    } catch (error) {
+      res.status(500).json({ message: "Error al generar reporte", error });
+    }
+  });
+
+  app.get("/api/reports/upcoming-tasks", authenticateUser, async (req: any, res) => {
+    try {
+      const tasks = await storage.getUrgentTasks();
+      const overdueTasks = await storage.getOverdueTasks();
+      
+      res.json({
+        urgent: tasks,
+        overdue: overdueTasks,
+        total: tasks.length + overdueTasks.length
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error al generar reporte", error });
+    }
+  });
+
+  app.get("/api/reports/documents-by-month", authenticateUser, async (req: any, res) => {
+    try {
+      const documents = await storage.getAllDocuments();
+      
+      const monthCount = documents.reduce((acc: any, doc: any) => {
+        const date = new Date(doc.createdAt);
+        const monthKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+        acc[monthKey] = (acc[monthKey] || 0) + 1;
+        return acc;
+      }, {});
+
+      res.json(monthCount);
+    } catch (error) {
+      res.status(500).json({ message: "Error al generar reporte", error });
+    }
+  });
+
+  app.get("/api/reports/dashboard-stats", authenticateUser, async (req: any, res) => {
+    try {
+      const stats = await storage.getDashboardStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener estadísticas", error });
     }
   });
 
