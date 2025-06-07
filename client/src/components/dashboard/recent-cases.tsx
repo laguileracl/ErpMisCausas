@@ -3,8 +3,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
+interface RecentCase {
+  id: number;
+  rol: string;
+  court: string;
+  client: string;
+  type: string;
+  status: string;
+  nextAction: string;
+}
+
 export function RecentCases() {
-  const { data: recentCases, isLoading } = useQuery({
+  const { data: recentCases, isLoading } = useQuery<RecentCase[]>({
     queryKey: ["/api/dashboard/recent-cases"],
   });
 
@@ -122,7 +132,7 @@ export function RecentCases() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {cases.map((caseItem: any) => (
+              {cases.map((caseItem: RecentCase) => (
                 <tr key={caseItem.id} className="hover:bg-gray-50 cursor-pointer">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-secondary-900">

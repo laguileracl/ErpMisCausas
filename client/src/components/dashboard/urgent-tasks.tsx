@@ -2,8 +2,18 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
+interface UrgentTask {
+  id: number;
+  title: string;
+  description: string;
+  dueDate: Date | string;
+  priority: string;
+  assignee: string;
+  color?: string;
+}
+
 export function UrgentTasks() {
-  const { data: urgentTasks, isLoading } = useQuery({
+  const { data: urgentTasks, isLoading } = useQuery<UrgentTask[]>({
     queryKey: ["/api/dashboard/urgent-tasks"],
   });
 
@@ -69,17 +79,19 @@ export function UrgentTasks() {
 
   const tasks = urgentTasks || mockUrgentTasks;
 
-  const getTaskColor = (task: any) => {
+  const getTaskColor = (task: UrgentTask) => {
     const now = new Date();
-    if (task.dueDate <= now) return "red";
-    if (task.dueDate <= new Date(now.getTime() + 86400000)) return "yellow";
+    const dueDate = new Date(task.dueDate);
+    if (dueDate <= now) return "red";
+    if (dueDate <= new Date(now.getTime() + 86400000)) return "yellow";
     return "blue";
   };
 
-  const getTaskTimeText = (task: any) => {
+  const getTaskTimeText = (task: UrgentTask) => {
     const now = new Date();
-    if (task.dueDate <= now) return "Vence hoy";
-    if (task.dueDate <= new Date(now.getTime() + 86400000)) return "Mañana 10:00 AM";
+    const dueDate = new Date(task.dueDate);
+    if (dueDate <= now) return "Vence hoy";
+    if (dueDate <= new Date(now.getTime() + 86400000)) return "Mañana 10:00 AM";
     return "15 de Enero";
   };
 
@@ -97,7 +109,7 @@ export function UrgentTasks() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {tasks.map((task: any) => {
+          {tasks.map((task: UrgentTask) => {
             const color = getTaskColor(task);
             const timeText = getTaskTimeText(task);
             

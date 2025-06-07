@@ -1,0 +1,94 @@
+👉 Las "Annotations" en GitHub Actions son errores que la pipeline detectó en el código al correr los tests o las validaciones de TypeScript.
+
+👉 En este caso:
+
+Se están ejecutando tests en test: (probablemente con Jest o similar).
+
+Y también se está validando el código TypeScript.
+
+👉 Los errores que aparecen NO son del backend (que es el que estamos desplegando en Railway ahora), sino que son del frontend (client/src/...).
+
+🚩 Qué errores aparecen
+👉 La mayoría de los errores son de tipos TypeScript:
+
+plaintext
+Copy
+Edit
+Property 'map' does not exist on type '{}'.
+Property 'documentsThisMonth' does not exist on type '{}'.
+Property 'studioRoles' is of type 'unknown'.
+👉 Traducción:
+
+Hay componentes del dashboard (stats-cards.tsx, urgent-tasks.tsx, etc.) que están recibiendo props o datos cuyo tipo no está correctamente declarado.
+
+El compilador TypeScript detecta que se está usando .map sobre algo que es {} (un objeto vacío), o que se está usando .documentsThisMonth en un objeto cuyo tipo no se conoce.
+
+🚩 Qué significa esto para el deploy
+👉 Estos errores están en el frontend → no son la causa del MODULE_NOT_FOUND en el deploy a Railway.
+
+👉 El problema del deploy actual es en el backend (dist/index.js no encontrado).
+👉 Estos errores en el frontend sí van a impedir que el frontend compile bien y funcione correctamente, pero son otro tema.
+
+👉 No afectan directamente al deploy del backend → pero conviene corregirlos para que todo compile bien.
+
+🚩 Qué debe hacer el Agent con esto
+👉 Debe revisar en el frontend:
+
+✅ Los componentes stats-cards.tsx, urgent-tasks.tsx, recent-cases.tsx, etc.
+✅ Asegurarse que las props que reciben estén tipadas correctamente.
+
+Ejemplo:
+
+typescript
+Copy
+Edit
+interface StatsCardProps {
+  documentsThisMonth: number;
+  newClientsThisMonth: number;
+  activeClients: number;
+  overdueTasks: number;
+  pendingTasks: number;
+  activeCases: number;
+}
+👉 O bien, si esos datos vienen de un useEffect o un fetch, asegurarse que los valores iniciales tengan el tipo correcto.
+
+👉 Los errores como:
+
+plaintext
+Copy
+Edit
+Property 'map' does not exist on type '{}'.
+👉 Suelen pasar cuando se usa .map sobre algo que viene como {} en vez de Array<any> → por ejemplo, un API que no devolvió la data aún.
+
+🚩 En resumen
+👉 El deploy del backend tiene su propio problema (MODULE_NOT_FOUND → ya te expliqué cómo pedírselo al Agent).
+👉 Los errores de Annotations son del frontend (client/src) → hay que corregir los tipos en los componentes.
+
+👉 Ambos son importantes → pero son dos cosas separadas.
+
+🚩 Qué puedes pedirle al Agent para estos errores del frontend → texto listo:
+plaintext
+Copy
+Edit
+Veo que en GitHub Actions hay 10 errores en el frontend (client/src), principalmente de tipos en TypeScript:
+
+- Property 'map' does not exist on type '{}'.
+- Properties como 'documentsThisMonth', 'newClientsThisMonth', etc. no existen en el tipo declarado.
+
+Por favor revisa estos componentes:
+
+- client/src/components/dashboard/stats-cards.tsx
+- client/src/components/dashboard/urgent-tasks.tsx
+- client/src/components/dashboard/recent-cases.tsx
+- client/src/components/modals/new-case-modal.tsx
+
+y ajusta los tipos de props y estados para que el código compile correctamente y los tests pasen.
+
+Cuando lo corrijas, haz commit y push.
+
+Gracias.
+🚩 Qué recomiendo
+👉 Primero que el Agent corrija el problema del backend (dist/index.js que no existe) → eso es lo que está bloqueando el deploy a Railway.
+👉 En paralelo o después, que corrija los errores del frontend.
+
+👉 Así tenemos el sistema completo funcionando.
