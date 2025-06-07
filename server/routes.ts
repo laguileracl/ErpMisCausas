@@ -1294,15 +1294,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Health check endpoint for deployment platforms
-  app.get("/api/health", (req, res) => {
-    res.json({
+  // Health check endpoints for deployment platforms
+  app.get("/health", (req, res) => {
+    res.status(200).json({
       status: "ok",
       timestamp: new Date().toISOString(),
       version: "1.0.0",
       environment: process.env.NODE_ENV || "development",
       database: process.env.DATABASE_URL ? "connected" : "not configured"
     });
+  });
+
+  app.get("/api/health", (req, res) => {
+    res.status(200).json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      version: "1.0.0",
+      environment: process.env.NODE_ENV || "development",
+      database: process.env.DATABASE_URL ? "connected" : "not configured"
+    });
+  });
+
+  app.get("/", (req, res) => {
+    // Simple root endpoint for basic healthcheck
+    res.status(200).send("ERP MisCausas is running");
   });
 
   const httpServer = createServer(app);
