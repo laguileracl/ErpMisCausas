@@ -46,4 +46,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
   CMD node -e "const port = process.env.PORT || 5000; require('http').get(\`http://localhost:\${port}/health\`, (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
 # Start application with production server (no vite dependencies)
-CMD ["npx", "tsx", "server/production.ts"]
+CMD ["npx", "tsx", "server/production-standalone.ts"]

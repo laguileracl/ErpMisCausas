@@ -1,5 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes-full";
+import { registerRoutes } from "./routes-minimal";
 import path from "path";
 import fs from "fs";
 
