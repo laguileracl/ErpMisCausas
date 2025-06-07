@@ -93,6 +93,12 @@ export function Sidebar() {
       label: "Reportes y Análisis",
       badge: null,
     },
+    {
+      href: "/contabilidad",
+      icon: "fas fa-calculator",
+      label: "Contabilidad",
+      badge: null,
+    },
   ];
 
   const adminItems = [
