@@ -1132,6 +1132,168 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===== CUENTA PROVISORIA ROUTES =====
+
+  // Get cuentas provisorias by legal case
+  app.get("/api/legal-cases/:caseId/cuenta-provisoria", authenticateUser, async (req, res) => {
+    try {
+      const caseId = parseInt(req.params.caseId);
+      const cuentas = await cuentaProvisoriaService.getCuentasProvisoriasByCaseId(caseId);
+      res.json(cuentas);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener cuentas provisorias", error });
+    }
+  });
+
+  // Create new cuenta provisoria
+  app.post("/api/cuenta-provisoria", authenticateUser, async (req: any, res) => {
+    try {
+      const cuentaData = { ...req.body, createdBy: req.user.id };
+      const cuenta = await cuentaProvisoriaService.createCuentaProvisoria(cuentaData);
+      res.status(201).json(cuenta);
+    } catch (error) {
+      res.status(500).json({ message: "Error al crear cuenta provisoria", error });
+    }
+  });
+
+  // Get cuenta provisoria by ID
+  app.get("/api/cuenta-provisoria/:id", authenticateUser, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const cuenta = await cuentaProvisoriaService.getCuentaProvisoriaById(id);
+      if (!cuenta) {
+        return res.status(404).json({ message: "Cuenta provisoria no encontrada" });
+      }
+      res.json(cuenta);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener cuenta provisoria", error });
+    }
+  });
+
+  // Get movements for cuenta provisoria
+  app.get("/api/cuenta-provisoria/:id/movements", authenticateUser, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const movements = await cuentaProvisoriaService.getMovements(id);
+      res.json(movements);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener movimientos", error });
+    }
+  });
+
+  // Regenerate movements from vouchers
+  app.post("/api/cuenta-provisoria/:id/regenerate-movements", authenticateUser, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const cuenta = await cuentaProvisoriaService.getCuentaProvisoriaById(id);
+      if (!cuenta) {
+        return res.status(404).json({ message: "Cuenta provisoria no encontrada" });
+      }
+      
+      await cuentaProvisoriaService.generateMovementsFromVouchers(
+        id, cuenta.legalCaseId, cuenta.year, cuenta.month
+      );
+      res.json({ message: "Movimientos regenerados exitosamente" });
+    } catch (error) {
+      res.status(500).json({ message: "Error al regenerar movimientos", error });
+    }
+  });
+
+  // Update cuenta provisoria status
+  app.put("/api/cuenta-provisoria/:id/status", authenticateUser, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { status } = req.body;
+      await cuentaProvisoriaService.updateStatus(id, status);
+      res.json({ message: "Estado actualizado exitosamente" });
+    } catch (error) {
+      res.status(500).json({ message: "Error al actualizar estado", error });
+    }
+  });
+
+  // Validate cuenta provisoria data
+  app.get("/api/cuenta-provisoria/:id/validate", authenticateUser, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validation = await cuentaProvisoriaService.validateCuentaProvisoria(id);
+      res.json(validation);
+    } catch (error) {
+      res.status(500).json({ message: "Error al validar cuenta provisoria", error });
+    }
+  });
+
+  // Generate PDF data for preview
+  app.get("/api/cuenta-provisoria/:id/pdf-data", authenticateUser, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const pdfData = await cuentaProvisoriaService.generatePDFData(id);
+      res.json(pdfData);
+    } catch (error) {
+      res.status(500).json({ message: "Error al generar datos para PDF", error });
+    }
+  });
+
+  // Generate PDF preview (HTML)
+  app.get("/api/cuenta-provisoria/:id/preview", authenticateUser, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const html = await pdfGeneratorService.generateCuentaProvisoriaPreview(id);
+      res.setHeader('Content-Type', 'text/html');
+      res.send(html);
+    } catch (error) {
+      res.status(500).json({ message: "Error al generar vista previa", error });
+    }
+  });
+
+  // Generate single PDF
+  app.get("/api/cuenta-provisoria/:id/pdf", authenticateUser, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { buffer, filename } = await pdfGeneratorService.generateCuentaProvisoriaPDF(id);
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(buffer);
+    } catch (error) {
+      res.status(500).json({ message: "Error al generar PDF", error });
+    }
+  });
+
+  // Generate multiple PDFs as ZIP
+  app.post("/api/cuenta-provisoria/bulk-pdf", authenticateUser, async (req, res) => {
+    try {
+      const { ids } = req.body;
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ message: "Se requiere un array de IDs" });
+      }
+
+      const { buffer, filename } = await pdfGeneratorService.generateMultipleCuentaProvisoriaPDFs(ids);
+      
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(buffer);
+    } catch (error) {
+      res.status(500).json({ message: "Error al generar PDFs múltiples", error });
+    }
+  });
+
+  // Get financial summary
+  app.get("/api/legal-cases/:caseId/financial-summary", authenticateUser, async (req, res) => {
+    try {
+      const caseId = parseInt(req.params.caseId);
+      const { year, month } = req.query;
+      
+      const summary = await cuentaProvisoriaService.getFinancialSummary(
+        caseId, 
+        parseInt(year as string),
+        month ? parseInt(month as string) : undefined
+      );
+      res.json(summary);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener resumen financiero", error });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

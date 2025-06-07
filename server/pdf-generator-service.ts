@@ -311,7 +311,7 @@ export class PDFGeneratorService {
       const page = await browser.newPage();
       await page.setContent(html, { waitUntil: 'networkidle0' });
       
-      const pdfBuffer = await page.pdf({
+      const pdfBuffer = Buffer.from(await page.pdf({
         format: 'A4',
         margin: {
           top: '2cm',
@@ -321,7 +321,7 @@ export class PDFGeneratorService {
         },
         printBackground: true,
         preferCSSPageSize: true
-      });
+      }));
       
       const filename = cuentaProvisoriaService.generateFileName(
         data.cuenta.rol,

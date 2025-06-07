@@ -16,7 +16,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2, Eye, Calculator, FileText, DollarSign } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Calculator, FileText, DollarSign, Download, Check, X, Clock } from "lucide-react";
 
 // Form schemas
 const accountSchema = z.object({
@@ -247,6 +247,10 @@ export default function ContabilidadPage() {
           <TabsTrigger value="vouchers" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             Comprobantes
+          </TabsTrigger>
+          <TabsTrigger value="cuenta-provisoria" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Cuenta Provisoria
           </TabsTrigger>
           <TabsTrigger value="reports" className="flex items-center gap-2">
             <DollarSign className="h-4 w-4" />
