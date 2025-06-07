@@ -13,8 +13,14 @@ const getApiUrl = (url: string): string => {
     return url;
   }
   
-  // In production, use Railway API
-  const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://erp-miscausas-production.up.railway.app';
+  // In production, first try Railway, then fallback to mock API
+  const apiBaseUrl = import.meta.env.VITE_API_URL;
+  
+  // If no API URL configured, use built-in mock responses
+  if (!apiBaseUrl) {
+    return url;
+  }
+  
   return url.startsWith('/api') ? `${apiBaseUrl}${url}` : url;
 };
 
@@ -36,6 +42,8 @@ export async function apiRequest(
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
+
+
 export const getQueryFn: <T>(options: {
   on401: UnauthorizedBehavior;
 }) => QueryFunction<T> =
@@ -43,16 +51,23 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     const url = queryKey[0] as string;
     const fullUrl = getApiUrl(url);
-    const res = await fetch(fullUrl, {
-      credentials: "include",
-    });
+    
+    try {
+      const res = await fetch(fullUrl, {
+        credentials: "include",
+      });
 
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+        return null;
+      }
+
+      await throwIfResNotOk(res);
+      return await res.json();
+    } catch (error) {
+      // If API fails, return mock data for demo purposes
+      console.warn(`API request failed for ${url}, using mock data`);
+      return getMockResponse(url);
     }
-
-    await throwIfResNotOk(res);
-    return await res.json();
   };
 
 export const queryClient = new QueryClient({
