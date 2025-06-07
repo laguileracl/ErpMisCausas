@@ -10,6 +10,9 @@ import Clientes from "@/pages/clientes";
 import Empresas from "@/pages/empresas";
 import Contactos from "@/pages/contactos";
 import Causas from "@/pages/causas";
+import Actividades from "@/pages/actividades";
+import Documentos from "@/pages/documentos";
+import Tareas from "@/pages/tareas";
 import { useAuth, AuthProvider } from "@/lib/auth";
 
 function Router() {
@@ -43,6 +46,9 @@ function Router() {
       <Route path="/empresas" component={Empresas} />
       <Route path="/contactos" component={Contactos} />
       <Route path="/causas" component={Causas} />
+      <Route path="/actividades" component={Actividades} />
+      <Route path="/documentos" component={Documentos} />
+      <Route path="/tareas" component={Tareas} />
       <Route component={NotFound} />
     </Switch>
   );
