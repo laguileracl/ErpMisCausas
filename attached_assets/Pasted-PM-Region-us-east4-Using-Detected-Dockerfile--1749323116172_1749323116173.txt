@@ -1,0 +1,191 @@
+PM
+
+ 
+
+[Region: us-east4]
+
+=========================
+
+Using Detected Dockerfile
+
+=========================
+
+
+context: 7jtc-Gw2t
+
+[internal] load build definition from Dockerfile
+
+[internal] load build definition from Dockerfile
+
+[internal] load build definition from Dockerfile  ✔ 0ms
+
+[internal] load build definition from Dockerfile
+
+[internal] load build definition from Dockerfile  ✔ 11ms
+
+[internal] load metadata for docker.io/library/node:20-alpine
+
+[internal] load metadata for docker.io/library/node:20-alpine  ✔ 73ms
+
+[internal] load .dockerignore
+
+[internal] load .dockerignore  ✔ 1ms
+
+[internal] load .dockerignore
+
+[internal] load .dockerignore  ✔ 8ms
+
+[8/9] RUN addgroup -g 1001 -S nodejs &&     adduser -S erp -u 1001 -G nodejs
+
+[7/9] RUN npm run build
+
+[6/9] COPY . .
+
+[5/9] RUN npm ci
+
+[4/9] COPY package*.json ./
+
+[internal] load build context
+
+[3/9] WORKDIR /app
+
+[2/9] RUN apk add --no-cache     chromium     nss     freetype     freetype-dev     harfbuzz     ca-certificates     ttf-freefont     && rm -rf /var/cache/apk/*
+
+[1/9] FROM docker.io/library/node:20-alpine@sha256:d3507a213936fe4ef54760a186e113db5188472d9efdf491686bd94580a1c1e8
+
+[9/9] RUN chown -R erp:nodejs /app
+
+[1/9] FROM docker.io/library/node:20-alpine@sha256:d3507a213936fe4ef54760a186e113db5188472d9efdf491686bd94580a1c1e8
+
+[internal] load build context  ✔ 0ms
+
+[1/9] FROM docker.io/library/node:20-alpine@sha256:d3507a213936fe4ef54760a186e113db5188472d9efdf491686bd94580a1c1e8  ✔ 10ms
+
+[internal] load build context
+
+[internal] load build context  ✔ 43ms
+
+[2/9] RUN apk add --no-cache     chromium     nss     freetype     freetype-dev     harfbuzz     ca-certificates     ttf-freefont     && rm -rf /var/cache/apk/*  ✔ 0ms – CACHED
+
+[3/9] WORKDIR /app  ✔ 0ms – CACHED
+
+[4/9] COPY package*.json ./  ✔ 0ms – CACHED
+
+[5/9] RUN npm ci  ✔ 0ms – CACHED
+
+[6/9] COPY . .
+
+[6/9] COPY . .  ✔ 398ms
+
+[7/9] RUN npm run build
+
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+
+vite v5.4.14 building for production...
+
+transforming...
+
+Browserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+✓ 3474 modules transformed.
+
+rendering chunks...
+
+computing gzip size...
+
+../dist/public/index.html                     0.63 kB │ gzip:   0.38 kB
+
+../dist/public/assets/index-D9-cwjNs.css     69.07 kB │ gzip:  12.11 kB
+
+../dist/public/assets/index-CXLy16V3.js   1,153.27 kB │ gzip: 308.29 kB
+
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+✓ built in 10.58s
+
+
+  dist/index.js  67.2kb
+
+⚡ Done in 7ms
+
+[7/9] RUN npm run build  ✔ 12s
+
+[8/9] RUN addgroup -g 1001 -S nodejs &&     adduser -S erp -u 1001 -G nodejs
+
+[8/9] RUN addgroup -g 1001 -S nodejs &&     adduser -S erp -u 1001 -G nodejs  ✔ 187ms
+
+[9/9] RUN chown -R erp:nodejs /app
+
+[9/9] RUN chown -R erp:nodejs /app  ✔ 33s
+
+exporting to docker image format
+
+exporting to image
+
+[auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com
+
+[auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com  ✔ 0ms
+
+importing to docker
+
+importing to docker  ✔ 19s
+
+Build time: 77.78 seconds
+
+ 
+
+====================
+
+Starting Healthcheck
+
+====================
+
+
+Path: /health
+
+Retry window: 5m0s
+
+ 
+
+Attempt #1 failed with service unavailable. Continuing to retry for 4m56s
+
+Attempt #2 failed with service unavailable. Continuing to retry for 4m55s
+
+Attempt #3 failed with service unavailable. Continuing to retry for 4m51s
+
+Attempt #4 failed with service unavailable. Continuing to retry for 4m46s
+
+Attempt #5 failed with service unavailable. Continuing to retry for 4m38s
+
+Attempt #6 failed with service unavailable. Continuing to retry for 4m22s
+
+Attempt #7 failed with service unavailable. Continuing to retry for 3m52s
+
+Attempt #8 failed with service unavailable. Continuing to retry for 3m22s
+
+Attempt #9 failed with service unavailable. Continuing to retry for 2m52s
+
+Attempt #10 failed with service unavailable. Continuing to retry for 2m21s
+
+Attempt #11 failed with service unavailable. Continuing to retry for 1m51s
+
+Attempt #12 failed with service unavailable. Continuing to retry for 1m21s
+
+Attempt #13 failed with service unavailable. Continuing to retry for 51s
+
+Attempt #14 failed with service unavailable. Continuing to retry for 21s
+
+ 
+
+1/1 replicas never became healthy!
+
+Healthcheck failed!
