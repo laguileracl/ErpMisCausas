@@ -13,15 +13,8 @@ const getApiUrl = (url: string): string => {
     return url;
   }
   
-  // In production, first try Railway, then fallback to mock API
-  const apiBaseUrl = import.meta.env.VITE_API_URL;
-  
-  // If no API URL configured, use built-in mock responses
-  if (!apiBaseUrl) {
-    return url;
-  }
-  
-  return url.startsWith('/api') ? `${apiBaseUrl}${url}` : url;
+  // In production, use Vercel API functions
+  return url;
 };
 
 export async function apiRequest(
