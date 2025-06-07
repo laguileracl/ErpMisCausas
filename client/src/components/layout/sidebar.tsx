@@ -72,6 +72,12 @@ export function Sidebar() {
       label: "Tareas y Alarmas",
       badge: "5",
     },
+    {
+      href: "/notificaciones",
+      icon: "fas fa-bell",
+      label: "Notificaciones",
+      badge: null,
+    },
   ];
 
   const dataItems = [

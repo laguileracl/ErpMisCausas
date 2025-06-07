@@ -1,19 +1,19 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bell, X, Check, Settings } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu";
+import { Bell, BellRing, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface Notification {
   id: number;
@@ -31,13 +31,14 @@ interface Notification {
 }
 
 export function NotificationBell() {
-  const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [isOpen, setIsOpen] = useState(false);
 
   // Get notifications
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ["/api/notifications"],
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 30000, // Refetch every 30 seconds
   });
 
   // Mark as read mutation
@@ -59,10 +60,25 @@ export function NotificationBell() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+      toast({
+        title: "Notificaciones marcadas",
+        description: "Todas las notificaciones han sido marcadas como leídas.",
+      });
     },
   });
 
   const unreadCount = notifications.filter((n: Notification) => !n.isRead).length;
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+
+    if (diffInMinutes < 1) return "Ahora";
+    if (diffInMinutes < 60) return `${diffInMinutes}m`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h`;
+    return `${Math.floor(diffInMinutes / 1440)}d`;
+  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -79,68 +95,47 @@ export function NotificationBell() {
     }
   };
 
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-
-    if (diffInMinutes < 1) return "Ahora";
-    if (diffInMinutes < 60) return `${diffInMinutes}m`;
-    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h`;
-    return `${Math.floor(diffInMinutes / 1440)}d`;
-  };
-
-  const handleMarkAsRead = (notificationId: number, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    markAsReadMutation.mutate(notificationId);
-  };
-
-  const handleMarkAllAsRead = () => {
-    markAllAsReadMutation.mutate();
+  const getPriorityIcon = (priority: string) => {
+    if (priority === "urgent" || priority === "high") {
+      return <BellRing className="h-4 w-4" />;
+    }
+    return <Bell className="h-4 w-4" />;
   };
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="relative">
-          <Bell className="h-4 w-4" />
+        <Button variant="ghost" size="sm" className="relative p-2">
+          <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
+              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
             >
               {unreadCount > 99 ? "99+" : unreadCount}
             </Badge>
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-96" align="end">
-        <div className="flex items-center justify-between p-2">
-          <DropdownMenuLabel className="text-sm font-semibold">
-            Notificaciones
-          </DropdownMenuLabel>
-          <div className="flex items-center gap-1">
-            {unreadCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleMarkAllAsRead}
-                className="h-6 px-2 text-xs"
-                disabled={markAllAsReadMutation.isPending}
-              >
-                <Check className="h-3 w-3 mr-1" />
-                Marcar todas
-              </Button>
-            )}
-            <Button variant="ghost" size="sm" className="h-6 px-2">
-              <Settings className="h-3 w-3" />
+      <DropdownMenuContent align="end" className="w-80">
+        <DropdownMenuLabel className="flex items-center justify-between">
+          <span>Notificaciones</span>
+          {unreadCount > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => markAllAsReadMutation.mutate()}
+              disabled={markAllAsReadMutation.isPending}
+              className="text-xs p-1 h-auto"
+            >
+              <Check className="h-3 w-3 mr-1" />
+              Marcar todas como leídas
             </Button>
-          </div>
-        </div>
-        <Separator />
+          )}
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
         
-        <ScrollArea className="h-80">
+        <ScrollArea className="h-96">
           {isLoading ? (
             <div className="p-4 text-center text-sm text-muted-foreground">
               Cargando notificaciones...
@@ -152,64 +147,52 @@ export function NotificationBell() {
           ) : (
             <div className="space-y-1">
               {notifications.map((notification: Notification) => (
-                <div
+                <DropdownMenuItem
                   key={notification.id}
-                  className={`p-3 hover:bg-muted/50 cursor-pointer relative group ${
-                    !notification.isRead ? "bg-muted/30" : ""
+                  className={`p-3 cursor-pointer flex-col items-start space-y-1 ${
+                    !notification.isRead
+                      ? "bg-blue-50 dark:bg-blue-950/50 border-l-2 border-blue-500"
+                      : "hover:bg-gray-50 dark:hover:bg-gray-800"
                   }`}
+                  onClick={() => {
+                    if (!notification.isRead) {
+                      markAsReadMutation.mutate(notification.id);
+                    }
+                  }}
                 >
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={`mt-1 h-2 w-2 rounded-full flex-shrink-0 ${
-                        !notification.isRead
-                          ? notification.priority === "urgent"
-                            ? "bg-red-500"
-                            : notification.priority === "high"
-                            ? "bg-orange-500"
-                            : "bg-blue-500"
-                          : "bg-gray-300"
-                      }`}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-medium truncate">
-                          {notification.title}
-                        </h4>
-                        <div className="flex items-center gap-1">
+                  <div className="flex items-start justify-between w-full">
+                    <div className="flex items-start gap-2 flex-1">
+                      <div className={getPriorityColor(notification.priority)}>
+                        {getPriorityIcon(notification.priority)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-medium truncate">
+                            {notification.title}
+                          </h4>
+                          {!notification.isRead && (
+                            <div className="h-2 w-2 bg-blue-500 rounded-full ml-2 flex-shrink-0"></div>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                          {notification.message}
+                        </p>
+                        <div className="flex items-center justify-between mt-2">
                           <span className="text-xs text-muted-foreground">
                             {formatTimeAgo(notification.createdAt)}
                           </span>
-                          {!notification.isRead && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100"
-                              onClick={(e) => handleMarkAsRead(notification.id, e)}
-                              disabled={markAsReadMutation.isPending}
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
+                          {notification.priority !== "normal" && (
+                            <Badge variant="outline" className="text-xs py-0">
+                              {notification.priority === "urgent" && "Urgente"}
+                              {notification.priority === "high" && "Alta"}
+                              {notification.priority === "low" && "Baja"}
+                            </Badge>
                           )}
                         </div>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                        {notification.message}
-                      </p>
-                      {notification.priority !== "normal" && (
-                        <div className="mt-1">
-                          <Badge
-                            variant="outline"
-                            className={`text-xs ${getPriorityColor(notification.priority)}`}
-                          >
-                            {notification.priority === "urgent" && "Urgente"}
-                            {notification.priority === "high" && "Alta"}
-                            {notification.priority === "low" && "Baja"}
-                          </Badge>
-                        </div>
-                      )}
                     </div>
                   </div>
-                </div>
+                </DropdownMenuItem>
               ))}
             </div>
           )}
@@ -217,12 +200,12 @@ export function NotificationBell() {
         
         {notifications.length > 0 && (
           <>
-            <Separator />
-            <div className="p-2">
-              <Button variant="ghost" size="sm" className="w-full text-xs">
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Button variant="ghost" className="w-full justify-center text-sm">
                 Ver todas las notificaciones
               </Button>
-            </div>
+            </DropdownMenuItem>
           </>
         )}
       </DropdownMenuContent>
