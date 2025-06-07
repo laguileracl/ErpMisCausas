@@ -1,5 +1,157 @@
 # Guía de Deployment - ERP MisCausas
 
+## 🚀 RAILWAY DEPLOYMENT - PASO A PASO COMPLETO
+
+### Requisitos Previos
+- Cuenta en Railway.app
+- Repositorio GitHub: https://github.com/laguileracl/ErpMisCausas
+- Acceso de administrador al repositorio
+
+### Paso 1: Configurar Railway
+
+1. **Crear cuenta en Railway**:
+   - Visita https://railway.app
+   - Regístrate con tu cuenta GitHub
+   - Autoriza acceso a tus repositorios
+
+2. **Crear nuevo proyecto**:
+   - Clic en "New Project"
+   - Selecciona "Deploy from GitHub repo"
+   - Busca y selecciona: `laguileracl/ErpMisCausas`
+   - Railway detectará automáticamente que es una aplicación Node.js
+
+### Paso 2: Configurar Base de Datos
+
+1. **Agregar PostgreSQL**:
+   - En el dashboard del proyecto, clic en "Add Service"
+   - Selecciona "Database" → "PostgreSQL"
+   - Railway creará automáticamente la base de datos
+
+2. **Obtener DATABASE_URL**:
+   - Clic en el servicio PostgreSQL
+   - Ve a la pestaña "Variables"
+   - Copia el valor de `DATABASE_URL`
+
+### Paso 3: Configurar Variables de Entorno
+
+1. **Acceder a variables del servicio web**:
+   - Clic en el servicio de la aplicación (no la base de datos)
+   - Ve a la pestaña "Variables"
+
+2. **Agregar variables requeridas**:
+   ```
+   NODE_ENV=production
+   DATABASE_URL=[pegar URL de PostgreSQL]
+   JWT_SECRET=tu-secreto-jwt-minimo-32-caracteres
+   SESSION_SECRET=tu-secreto-session-minimo-32-caracteres
+   ```
+
+3. **Generar secretos seguros** (usar generador online o comando):
+   ```bash
+   # Ejemplo de secretos seguros:
+   JWT_SECRET=a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6
+   SESSION_SECRET=z6y5x4w3v2u1t0s9r8q7p6o5n4m3l2k1j0i9h8g7f6e5d4c3b2a1
+   ```
+
+### Paso 4: Configurar Deployment Automático
+
+1. **Conectar GitHub Actions**:
+   - En Railway, ve a "Settings" → "Environment"
+   - Activa "Auto-Deploy" desde branch `main`
+   - Configura "Build Command": `npm run build`
+   - Configura "Start Command": `npm start`
+
+2. **Configurar secretos en GitHub**:
+   - Ve a tu repositorio GitHub
+   - Settings → Secrets and variables → Actions
+   - Agregar secretos:
+     ```
+     RAILWAY_TOKEN=[obtener desde Railway Profile → Tokens]
+     RAILWAY_SERVICE_ID=[obtener desde Railway Service Settings]
+     ```
+
+### Paso 5: Primer Deployment
+
+1. **Triggear deployment**:
+   - Railway iniciará automáticamente el primer deploy
+   - Puedes ver el progreso en "Deployments"
+
+2. **Verificar build**:
+   - Tiempo estimado: 3-5 minutos
+   - Verificar que no hay errores en los logs
+   - Estado debe cambiar a "Success"
+
+### Paso 6: Configurar Dominio
+
+1. **Generar dominio Railway**:
+   - En el servicio, ve a "Settings" → "Domains"
+   - Clic en "Generate Domain"
+   - Railway asignará: `https://erp-miscausas-production.up.railway.app`
+
+2. **Probar aplicación**:
+   - Visita el dominio generado
+   - Verificar que carga la página de login
+
+### Paso 7: Inicializar Base de Datos
+
+1. **Ejecutar migraciones**:
+   - En Railway, ve a "Deployments" → "View Logs"
+   - Verificar que las tablas se crearon automáticamente
+   - Si hay errores, revisar variables de entorno
+
+2. **Verificar salud del sistema**:
+   - Visita: `https://tu-dominio.up.railway.app/api/health`
+   - Debe retornar: `{"status": "ok", "database": "connected"}`
+
+### Paso 8: Validación Completa
+
+1. **Probar funcionalidades principales**:
+   - Crear cuenta de usuario
+   - Acceder al módulo contable
+   - Crear una cuenta en el plan de cuentas
+   - Generar un voucher de prueba
+   - Crear una causa legal
+   - Generar cuenta provisoria PDF
+   - Descargar ZIP de cuentas múltiples
+
+2. **Verificar performance**:
+   - Tiempo de carga de páginas < 3 segundos
+   - Generación de PDF < 30 segundos
+   - Descarga de ZIP < 2 minutos
+
+### Paso 9: Configurar Dominio Personalizado (erp.miscausas.cl)
+
+1. **En Railway**:
+   - Ve a "Settings" → "Domains"
+   - Clic en "Custom Domain"
+   - Ingresa: `erp.miscausas.cl`
+   - Railway proporcionará los registros DNS
+
+2. **En tu proveedor DNS**:
+   - Agregar registro CNAME:
+     ```
+     erp.miscausas.cl → [dominio proporcionado por Railway]
+     ```
+   - Tiempo de propagación: 5-60 minutos
+
+3. **Verificar SSL**:
+   - Railway generará automáticamente certificado SSL
+   - Verificar que https://erp.miscausas.cl funcione
+
+### Troubleshooting Común
+
+**Error: Build failed**
+- Revisar que todas las variables de entorno estén configuradas
+- Verificar que DATABASE_URL sea válida
+
+**Error: Database connection**
+- Confirmar que PostgreSQL service esté activo
+- Verificar DATABASE_URL en variables de entorno
+
+**Error: PDF generation**
+- Los PDFs requieren Chromium, incluido en el Dockerfile
+- Verificar logs para errores específicos de Puppeteer
+
 ## Preparación para Producción
 
 ### 1. Build de Producción
