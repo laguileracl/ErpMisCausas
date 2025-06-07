@@ -69,6 +69,21 @@ export function Sidebar() {
     },
   ];
 
+  const dataItems = [
+    {
+      href: "/importacion",
+      icon: "fas fa-upload",
+      label: "Importación CSV",
+      badge: null,
+    },
+    {
+      href: "/reportes",
+      icon: "fas fa-chart-bar",
+      label: "Reportes y Análisis",
+      badge: null,
+    },
+  ];
+
   const adminItems = [
     {
       href: "/users",

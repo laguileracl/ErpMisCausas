@@ -1,12 +1,12 @@
+import { useQuery } from "@tanstack/react-query";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Users, Building, FileText, Clock, AlertTriangle, Gavel, TrendingUp, Plus, Upload, BarChart3 } from "lucide-react";
+import { Link } from "wouter";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/topbar";
-import { StatsCards } from "@/components/dashboard/stats-cards";
-import { UrgentTasks } from "@/components/dashboard/urgent-tasks";
-import { RecentCases } from "@/components/dashboard/recent-cases";
-import { MiniCalendar } from "@/components/dashboard/mini-calendar";
-import { QuickActions } from "@/components/dashboard/quick-actions";
-import { SystemStatus } from "@/components/dashboard/system-status";
-import { NewCaseModal } from "@/components/modals/new-case-modal";
 import { useState } from "react";
 
 export default function Dashboard() {
