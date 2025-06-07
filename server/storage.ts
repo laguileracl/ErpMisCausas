@@ -376,6 +376,9 @@ export class MemStorage implements IStorage {
     const role: Role = {
       ...insertRole,
       id,
+      description: insertRole.description ?? null,
+      permissions: insertRole.permissions ?? {},
+      isActive: insertRole.isActive ?? true,
       createdAt: new Date()
     };
     this.roles.set(id, role);
@@ -409,6 +412,16 @@ export class MemStorage implements IStorage {
     const client: Client = {
       ...insertClient,
       id,
+      email: insertClient.email ?? null,
+      firstName: insertClient.firstName ?? null,
+      lastName: insertClient.lastName ?? null,
+      isActive: insertClient.isActive ?? true,
+      companyName: insertClient.companyName ?? null,
+      phone: insertClient.phone ?? null,
+      address: insertClient.address ?? null,
+      city: insertClient.city ?? null,
+      region: insertClient.region ?? null,
+      notes: insertClient.notes ?? null,
       createdAt: new Date()
     };
     this.clients.set(id, client);

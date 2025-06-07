@@ -1,7 +1,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "./queryClient";
-import type { User, LoginRequest } from "@shared/schema";
+import type { User, LoginRequest } from "../../../shared/schema";
 
 interface AuthContextType {
   user: User | null;
@@ -30,28 +30,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginRequest) => {
-      const response = await apiRequest("/api/login", {
-        method: "POST",
-        body: JSON.stringify(credentials),
-      });
-      if (!response.ok) {
-        throw new Error("Login failed");
-      }
-      return response.json();
+      const response = await apiRequest("POST", "/api/auth/login", credentials);
+      const data = await response.json();
+      return data.user;
     },
-    onSuccess: () => {
+    onSuccess: (user) => {
+      queryClient.setQueryData(['/api/user'], user);
       queryClient.invalidateQueries({ queryKey: ['/api/user'] });
     },
   });
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("/api/logout", {
-        method: "POST",
-      });
-      if (!response.ok) {
-        throw new Error("Logout failed");
-      }
+      await apiRequest("POST", "/api/auth/logout");
     },
     onSuccess: () => {
       queryClient.setQueryData(['/api/user'], null);

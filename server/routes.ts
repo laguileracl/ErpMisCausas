@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./storage-minimal";
 import { 
   insertUserSchema, insertClientSchema, insertCompanySchema, insertContactSchema,
   insertProviderSchema, insertCourtSchema, insertCaseTypeSchema, insertStudioRoleSchema,
