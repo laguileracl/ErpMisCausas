@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { users, roles, clients, companies, contacts, companyContacts } from "../shared/schema";
+import { users, roles, clients, companies, contacts, companyContacts, caseTypes, studioRoles, courts } from "../shared/schema";
 
 async function seed() {
   try {
@@ -26,26 +26,26 @@ async function seed() {
 
   // Tribunales
   const courtsData = [
-    { name: "1° Juzgado Civil de Santiago", city: "Santiago", region: "Metropolitana", type: "civil" },
-    { name: "2° Juzgado Civil de Santiago", city: "Santiago", region: "Metropolitana", type: "civil" },
-    { name: "Juzgado de Garantía de Santiago", city: "Santiago", region: "Metropolitana", type: "penal" },
-    { name: "1° Juzgado de Familia de Santiago", city: "Santiago", region: "Metropolitana", type: "familia" },
-    { name: "Juzgado del Trabajo de Santiago", city: "Santiago", region: "Metropolitana", type: "laboral" },
+    { name: "1° Juzgado Civil de Santiago", city: "Santiago", region: "Metropolitana", type: "civil", jurisdiction: "Civil" },
+    { name: "2° Juzgado Civil de Santiago", city: "Santiago", region: "Metropolitana", type: "civil", jurisdiction: "Civil" },
+    { name: "Juzgado de Garantía de Santiago", city: "Santiago", region: "Metropolitana", type: "penal", jurisdiction: "Penal" },
+    { name: "1° Juzgado de Familia de Santiago", city: "Santiago", region: "Metropolitana", type: "familia", jurisdiction: "Familia" },
+    { name: "Juzgado del Trabajo de Santiago", city: "Santiago", region: "Metropolitana", type: "laboral", jurisdiction: "Laboral" },
   ];
 
-  console.log("Creando tipos de causa...");
-  for (const caseTypeData of caseTypesData) {
-    await db.insert(caseTypes).values(caseTypeData);
-  }
+  // Check if legal case data already exists
+  const existingCaseTypes = await db.select().from(caseTypes).limit(1);
+  if (existingCaseTypes.length === 0) {
+    console.log("Creando tipos de causa...");
+    await db.insert(caseTypes).values(caseTypesData);
 
-  console.log("Creando roles del estudio...");
-  for (const studioRoleData of studioRolesData) {
-    await db.insert(studioRoles).values(studioRoleData);
-  }
+    console.log("Creando roles del estudio...");
+    await db.insert(studioRoles).values(studioRolesData);
 
-  console.log("Creando tribunales...");
-  for (const courtData of courtsData) {
-    await db.insert(courts).values(courtData);
+    console.log("Creando tribunales...");
+    await db.insert(courts).values(courtsData);
+  } else {
+    console.log("Datos de causas judiciales ya existen, saltando...");
   }
 
     // Crear rol admin
