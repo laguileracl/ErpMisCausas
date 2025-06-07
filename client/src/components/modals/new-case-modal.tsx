@@ -3,6 +3,29 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { insertLegalCaseSchema, type InsertLegalCase } from "@shared/schema";
+
+interface CaseType {
+  id: number;
+  name: string;
+}
+
+interface StudioRole {
+  id: number;
+  name: string;
+}
+
+interface Court {
+  id: number;
+  name: string;
+}
+
+interface User {
+  id: number;
+  username: string;
+  firstName: string;
+  lastName: string;
+}
+
 import {
   Dialog,
   DialogContent,
@@ -68,19 +91,19 @@ export function NewCaseModal({ isOpen, onClose }: NewCaseModalProps) {
   });
 
   // Fetch options for dropdowns
-  const { data: caseTypes = [] } = useQuery({
+  const { data: caseTypes = [] } = useQuery<CaseType[]>({
     queryKey: ["/api/case-types"],
   });
 
-  const { data: studioRoles = [] } = useQuery({
+  const { data: studioRoles = [] } = useQuery<StudioRole[]>({
     queryKey: ["/api/studio-roles"],
   });
 
-  const { data: courts = [] } = useQuery({
+  const { data: courts = [] } = useQuery<Court[]>({
     queryKey: ["/api/courts"],
   });
 
-  const { data: users = [] } = useQuery({
+  const { data: users = [] } = useQuery<User[]>({
     queryKey: ["/api/users"],
   });
 
