@@ -11,7 +11,7 @@ import {
   activities, tasks, auditLogs 
 } from "../shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, like, isNull, isNotNull } from "drizzle-orm";
+import { eq, desc, and, or, like, isNull, isNotNull, gte, lte, count } from "drizzle-orm";
 
 export interface IStorage {
   // Users and Authentication
@@ -790,8 +790,42 @@ export class DatabaseStorage implements IStorage {
     return auditLog;
   }
 
-  async getAuditLogs(limit: number = 100): Promise<AuditLog[]> {
-    return await db.select().from(auditLogs).orderBy(desc(auditLogs.timestamp)).limit(limit);
+  async getAuditLogs(filters?: {
+    userId?: number;
+    action?: string;
+    entityType?: string;
+    startDate?: Date;
+    endDate?: Date;
+    limit?: number;
+    offset?: number;
+  }): Promise<AuditLog[]> {
+    let query = db.select().from(auditLogs);
+    
+    if (filters) {
+      const conditions = [];
+      if (filters.userId) conditions.push(eq(auditLogs.userId, filters.userId));
+      if (filters.action) conditions.push(eq(auditLogs.action, filters.action));
+      if (filters.entityType) conditions.push(eq(auditLogs.entityType, filters.entityType));
+      if (filters.startDate) conditions.push(gte(auditLogs.timestamp, filters.startDate));
+      if (filters.endDate) conditions.push(lte(auditLogs.timestamp, filters.endDate));
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+    }
+    
+    query = query.orderBy(desc(auditLogs.timestamp));
+    
+    if (filters?.limit) {
+      query = query.limit(filters.limit);
+      if (filters.offset) {
+        query = query.offset(filters.offset);
+      }
+    } else {
+      query = query.limit(100);
+    }
+    
+    return await query;
   }
 
   async getAuditLogsByUser(userId: number): Promise<AuditLog[]> {
@@ -805,6 +839,32 @@ export class DatabaseStorage implements IStorage {
         eq(auditLogs.entityId, entityId)
       )
     ).orderBy(desc(auditLogs.timestamp));
+  }
+
+  async getAuditLogCount(filters?: {
+    userId?: number;
+    action?: string;
+    entityType?: string;
+    startDate?: Date;
+    endDate?: Date;
+  }): Promise<number> {
+    let query = db.select({ count: count() }).from(auditLogs);
+    
+    if (filters) {
+      const conditions = [];
+      if (filters.userId) conditions.push(eq(auditLogs.userId, filters.userId));
+      if (filters.action) conditions.push(eq(auditLogs.action, filters.action));
+      if (filters.entityType) conditions.push(eq(auditLogs.entityType, filters.entityType));
+      if (filters.startDate) conditions.push(gte(auditLogs.timestamp, filters.startDate));
+      if (filters.endDate) conditions.push(lte(auditLogs.timestamp, filters.endDate));
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+    }
+    
+    const result = await query;
+    return result[0]?.count || 0;
   }
 
   // Dashboard Stats

@@ -123,9 +123,24 @@ export interface IStorage {
 
   // Audit Logs
   createAuditLog(auditLog: InsertAuditLog): Promise<AuditLog>;
-  getAuditLogs(limit?: number): Promise<AuditLog[]>;
+  getAuditLogs(filters?: {
+    userId?: number;
+    action?: string;
+    entityType?: string;
+    startDate?: Date;
+    endDate?: Date;
+    limit?: number;
+    offset?: number;
+  }): Promise<AuditLog[]>;
   getAuditLogsByUser(userId: number): Promise<AuditLog[]>;
   getAuditLogsByEntity(entityType: string, entityId: number): Promise<AuditLog[]>;
+  getAuditLogCount(filters?: {
+    userId?: number;
+    action?: string;
+    entityType?: string;
+    startDate?: Date;
+    endDate?: Date;
+  }): Promise<number>;
 
   // Dashboard Stats
   getDashboardStats(): Promise<{
