@@ -77,8 +77,8 @@ export function Sidebar() {
       badge: null,
     },
     {
-      href: "/audit",
-      icon: "fas fa-clipboard-list",
+      href: "/auditoria",
+      icon: "fas fa-shield-alt",
       label: "Auditoría",
       badge: null,
     },

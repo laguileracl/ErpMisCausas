@@ -907,11 +907,53 @@ export class MemStorage implements IStorage {
     return auditLog;
   }
 
-  async getAuditLogs(limit?: number): Promise<AuditLog[]> {
-    const logs = Array.from(this.auditLogs.values())
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-    
-    return limit ? logs.slice(0, limit) : logs;
+  async getAuditLogs(filters?: {
+    userId?: number;
+    action?: string;
+    entityType?: string;
+    startDate?: Date;
+    endDate?: Date;
+    limit?: number;
+    offset?: number;
+  }): Promise<AuditLog[]> {
+    let logs = Array.from(this.auditLogs.values());
+
+    if (filters) {
+      if (filters.userId) logs = logs.filter(log => log.userId === filters.userId);
+      if (filters.action) logs = logs.filter(log => log.action === filters.action);
+      if (filters.entityType) logs = logs.filter(log => log.entityType === filters.entityType);
+      if (filters.startDate) logs = logs.filter(log => log.timestamp >= filters.startDate!);
+      if (filters.endDate) logs = logs.filter(log => log.timestamp <= filters.endDate!);
+    }
+
+    logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+    if (filters?.limit) {
+      const start = filters.offset || 0;
+      return logs.slice(start, start + filters.limit);
+    }
+
+    return logs;
+  }
+
+  async getAuditLogCount(filters?: {
+    userId?: number;
+    action?: string;
+    entityType?: string;
+    startDate?: Date;
+    endDate?: Date;
+  }): Promise<number> {
+    let logs = Array.from(this.auditLogs.values());
+
+    if (filters) {
+      if (filters.userId) logs = logs.filter(log => log.userId === filters.userId);
+      if (filters.action) logs = logs.filter(log => log.action === filters.action);
+      if (filters.entityType) logs = logs.filter(log => log.entityType === filters.entityType);
+      if (filters.startDate) logs = logs.filter(log => log.timestamp >= filters.startDate!);
+      if (filters.endDate) logs = logs.filter(log => log.timestamp <= filters.endDate!);
+    }
+
+    return logs.length;
   }
 
   async getAuditLogsByUser(userId: number): Promise<AuditLog[]> {

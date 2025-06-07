@@ -13,6 +13,7 @@ import Causas from "@/pages/causas";
 import Actividades from "@/pages/actividades";
 import Documentos from "@/pages/documentos";
 import Tareas from "@/pages/tareas";
+import Auditoria from "@/pages/auditoria";
 import { useAuth, AuthProvider } from "@/lib/auth";
 
 function Router() {
@@ -49,6 +50,7 @@ function Router() {
       <Route path="/actividades" component={Actividades} />
       <Route path="/documentos" component={Documentos} />
       <Route path="/tareas" component={Tareas} />
+      <Route path="/auditoria" component={Auditoria} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -633,13 +633,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Audit Logs routes
   app.get("/api/audit-logs", async (req, res) => {
     try {
-      const auditLogs = await storage.getAuditLogs();
-      res.json(auditLogs);
+      const { 
+        userId, 
+        action, 
+        entityType, 
+        startDate, 
+        endDate, 
+        limit = "50", 
+        offset = "0" 
+      } = req.query;
+
+      const filters: any = {};
+      if (userId) filters.userId = parseInt(userId as string);
+      if (action) filters.action = action as string;
+      if (entityType) filters.entityType = entityType as string;
+      if (startDate) filters.startDate = new Date(startDate as string);
+      if (endDate) filters.endDate = new Date(endDate as string);
+      if (limit) filters.limit = parseInt(limit as string);
+      if (offset) filters.offset = parseInt(offset as string);
+
+      const auditLogs = await storage.getAuditLogs(filters);
+      const totalCount = await storage.getAuditLogCount(filters);
+      
+      res.json({ auditLogs, totalCount });
     } catch (error) {
-      console.error("Audit logs error:", error);
-      res.status(500).json({ error: "Internal server error" });
+      console.error("Error getting audit logs:", error);
+      res.status(500).json({ error: "Failed to get audit logs" });
     }
   });
+
+  app.get("/api/audit-logs/entity/:entityType/:entityId", async (req, res) => {
+    try {
+      const { entityType, entityId } = req.params;
+      const auditLogs = await storage.getAuditLogsByEntity(entityType, parseInt(entityId));
+      res.json(auditLogs);
+    } catch (error) {
+      console.error("Error getting audit logs by entity:", error);
+      res.status(500).json({ error: "Failed to get audit logs by entity" });
+    }
+  });
+
+  app.get("/api/audit-logs/user/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const auditLogs = await storage.getAuditLogsByUser(parseInt(userId));
+      res.json(auditLogs);
+    } catch (error) {
+      console.error("Error getting audit logs by user:", error);
+      res.status(500).json({ error: "Failed to get audit logs by user" });
+    }
+  });
+
+  // Helper function to create audit log
+  const createAuditLog = async (
+    userId: number | null,
+    action: string,
+    entityType: string | null,
+    entityId: number | null,
+    oldValues: any = null,
+    newValues: any = null,
+    ipAddress: string | null = null,
+    userAgent: string | null = null
+  ) => {
+    try {
+      await storage.createAuditLog({
+        userId,
+        action,
+        entityType,
+        entityId,
+        oldValues,
+        newValues,
+        ipAddress,
+        userAgent
+      });
+    } catch (error) {
+      console.error("Error creating audit log:", error);
+    }
+  };
 
   return httpServer;
 }
