@@ -6,6 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
+import Clientes from "@/pages/clientes";
+import Empresas from "@/pages/empresas";
+import Contactos from "@/pages/contactos";
 import { useAuth, AuthProvider } from "@/lib/auth";
 
 function Router() {
@@ -35,6 +38,9 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/dashboard" component={Dashboard} />
+      <Route path="/clientes" component={Clientes} />
+      <Route path="/empresas" component={Empresas} />
+      <Route path="/contactos" component={Contactos} />
       <Route component={NotFound} />
     </Switch>
   );

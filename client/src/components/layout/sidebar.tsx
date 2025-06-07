@@ -17,19 +17,19 @@ export function Sidebar() {
       badge: "12",
     },
     {
-      href: "/clients",
+      href: "/clientes",
       icon: "fas fa-users",
       label: "Clientes",
       badge: null,
     },
     {
-      href: "/companies",
+      href: "/empresas",
       icon: "fas fa-building",
-      label: "Empresas y Comunidades",
+      label: "Empresas",
       badge: null,
     },
     {
-      href: "/contacts",
+      href: "/contactos",
       icon: "fas fa-address-book",
       label: "Contactos",
       badge: null,
