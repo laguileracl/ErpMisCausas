@@ -1,4 +1,5 @@
-import { pgTable, text, serial, integer, boolean, timestamp, decimal, jsonb, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, decimal, jsonb, varchar, date, numeric } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -438,3 +439,66 @@ export const loginSchema = z.object({
 });
 
 export type LoginRequest = z.infer<typeof loginSchema>;
+
+// Accounting Module Tables
+export const accounts = pgTable("accounts", {
+  id: serial("id").primaryKey(),
+  code: text("code").notNull().unique(),
+  name: text("name").notNull(),
+  type: text("type").notNull(),
+  category: text("category").notNull(),
+  parentId: integer("parent_id"),
+  isActive: boolean("is_active").default(true),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const vouchers = pgTable("vouchers", {
+  id: serial("id").primaryKey(),
+  voucherNumber: text("voucher_number").notNull().unique(),
+  legalCaseId: integer("legal_case_id"),
+  contactId: integer("contact_id"),
+  companyId: integer("company_id"),
+  documentType: text("document_type").notNull(),
+  folioNumber: text("folio_number").notNull(),
+  issueDate: text("issue_date").notNull(),
+  description: text("description").notNull(),
+  comments: text("comments"),
+  status: text("status").notNull().default("pending"),
+  subtotal: integer("subtotal").notNull(),
+  taxAmount: integer("tax_amount").notNull().default(0),
+  total: integer("total").notNull(),
+  attachments: text("attachments").array(),
+  createdBy: integer("created_by").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const voucherLines = pgTable("voucher_lines", {
+  id: serial("id").primaryKey(),
+  voucherId: integer("voucher_id").notNull(),
+  accountId: integer("account_id").notNull(),
+  description: text("description").notNull(),
+  quantity: decimal("quantity").notNull(),
+  unitPrice: integer("unit_price").notNull(),
+  totalAmount: integer("total_amount").notNull(),
+  isTaxable: boolean("is_taxable").default(true),
+  debitAmount: integer("debit_amount").notNull().default(0),
+  creditAmount: integer("credit_amount").notNull().default(0),
+  lineOrder: integer("line_order").notNull(),
+});
+
+// Simplified insert schemas
+export const insertAccountSchema = createInsertSchema(accounts);
+export const insertVoucherSchema = createInsertSchema(vouchers);
+export const insertVoucherLineSchema = createInsertSchema(voucherLines);
+
+// Types
+export type Account = typeof accounts.$inferSelect;
+export type Voucher = typeof vouchers.$inferSelect;
+export type VoucherLine = typeof voucherLines.$inferSelect;
+
+export type InsertAccount = z.infer<typeof insertAccountSchema>;
+export type InsertVoucher = z.infer<typeof insertVoucherSchema>;
+export type InsertVoucherLine = z.infer<typeof insertVoucherLineSchema>;

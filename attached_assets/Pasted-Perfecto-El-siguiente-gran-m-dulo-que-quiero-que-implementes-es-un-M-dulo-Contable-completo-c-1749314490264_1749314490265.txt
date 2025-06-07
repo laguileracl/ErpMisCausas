@@ -1,0 +1,128 @@
+Perfecto.
+
+El siguiente gran módulo que quiero que implementes es un **Módulo Contable completo**, con las siguientes características:
+
+1. Plan de Cuentas
+   - Debe existir un plan de cuentas general para el estudio jurídico.
+   - Además, cada Causa Judicial (LegalCase) debe tener su propio plan de cuentas, basado en un plan de cuentas fijo (que podamos ir ampliando en el futuro).
+   - Los planes de cuentas deben incluir categorías típicas como:
+     - Ingresos:
+       - Ventas de bienes muebles
+       - Ventas de inmuebles
+       - Honorarios del Liquidador
+       - Intereses ganados
+       - Otros ingresos típicos concursales.
+     - Gastos:
+       - Pago a ministro de fe
+       - Gastos de publicidad de remates
+       - Gastos de bodegaje
+       - Honorarios de terceros
+       - Gastos generales
+       - Otros gastos típicos concursales.
+     - Otros ingresos y gastos.
+   - Todos los montos deben trabajarse en pesos chilenos.
+
+2. Vouchers Contables
+   - CRUD completo de vouchers contables.
+   - Un voucher contable debe permitir:
+     - Estar asociado a una Causa Judicial (LegalCase) o bien a nivel general del estudio jurídico.
+     - Tener un identificador único de "journal entry" (voucher ID único).
+     - Tener los siguientes campos generales:
+       - Tipo de documento (boleta, factura, voucher, etc.).
+       - Número de folio.
+       - Fecha de emisión.
+       - Glosa general del voucher.
+       - Comentarios adicionales (campo texto abierto).
+       - Adjuntar respaldos (PDF, imágenes u otros documentos).
+       - Estado del documento (pendiente, pagado, contabilizado).
+     - Debe permitir ingresar detalles del voucher:
+       - Para cada línea del voucher:
+         - Glosa de línea.
+         - Cantidad.
+         - Precio unitario.
+         - Precio total.
+         - Indicador de si la línea es afecta o exenta de impuestos.
+         - Cuenta contable afectada.
+     - El sistema debe calcular automáticamente:
+       - Total neto.
+       - Impuestos (IVA si corresponde).
+       - Total con impuestos.
+
+3. Asiento contable generado
+   - El sistema debe mostrar el asiento contable generado por el voucher:
+     - Cuenta Debe / Haber.
+     - Montos correspondientes.
+   - El asiento contable debe poder visualizarse desde el voucher.
+   - Debe poder descargarse el voucher contable en formato Excel o PDF, con:
+     - Encabezado con los datos del voucher.
+     - Detalle de líneas.
+     - Asiento contable generado.
+     - Indicador único del journal entry.
+
+4. Libro Mayor por Causa Judicial
+   - El sistema debe poder generar un **Libro Mayor** por cada Causa Judicial.
+   - Formato típico:
+     - Fecha.
+     - Tipo de documento / movimiento.
+     - Referencia (folio o voucher ID).
+     - Cuenta contable.
+     - Glosa.
+     - Monto Debe.
+     - Monto Haber.
+     - Saldo acumulado.
+   - Debe poder descargarse en formato Excel o PDF.
+
+5. Estado de Resultados y Balance por Causa Judicial
+   - Estado de Resultados por Causa Judicial:
+     - Ingresos - Gastos de la causa.
+     - Reporte con Libro Mayor anexo.
+   - Balance por causa:
+     - Activos.
+     - Pasivos.
+     - Patrimonio.
+   - Todo debe poder descargarse en Excel o PDF con formato profesional.
+
+6. Cuenta Provisoria por Causa Judicial (Formato exacto entregado)
+   - El sistema debe ser capaz de generar el reporte de **Cuenta Provisoria** exactamente en el formato que te compartí en el ejemplo PDF (una sola página), con las mismas categorías y estructura, con columnas:
+     - Saldo anterior.
+     - Monto del período.
+     - Total acumulado.
+   - El informe debe incluir el bloque de **Fondo Disponible**, tal como el ejemplo.
+   - Este informe debe poder generarse:
+     - Para una causa individual.
+     - Para todas las causas vigentes en el sistema que sean de tipo **Procedimiento Concursal** en que el estudio tenga el rol de **Liquidador Concursal**.
+   - Si se genera para múltiples causas:
+     - El sistema debe generar un archivo ZIP que contenga un PDF por causa (o un ZIP de Excels).
+     - Cada archivo se debe nombrar de la siguiente manera:
+       - ROL de la causa + nombre resumido del deudor + mes + año de emisión.
+     - Ejemplo: "C-1055-2025_ENZO_TORRES_04-2025.pdf"
+   - Este formato de Cuenta Provisoria es el exigido por los tribunales chilenos, por lo que el formato de los PDFs y Excels debe ser **exactamente igual al que se entregó como ejemplo**, respetando márgenes, una sola página, estructura, y bloques.
+
+7. Informes Globales del Estudio Jurídico
+   - Informe global de Boletas de Honorarios emitidas.
+   - Informe global de Facturas emitidas.
+   - Informe consolidado de Ingresos y Gastos del Estudio Jurídico.
+
+8. Submódulo de Consultas de Movimientos
+   - Submódulo que permita consultar movimientos contables:
+     - Por rango de fechas.
+     - Por cuenta contable.
+     - Por tipo de documento.
+     - Por Contact / Company.
+     - Por Causa Judicial.
+   - Resultados exportables a Excel o PDF.
+
+9. Relación con Contact / Company
+   - Cada voucher puede estar relacionado a un Contact / Company (proveedor o cliente).
+   - En la ficha del Contact / Company se debe mostrar:
+     - Listado de vouchers relacionados.
+     - Totales de ingresos / gastos asociados.
+
+10. Requisitos generales
+    - El sistema debe trabajar en **pesos chilenos**.
+    - Los reportes, libros mayores y cuentas provisorias deben poder descargarse en **Excel y PDF**.
+    - Toda la interfaz en español.
+
+Por favor confirma si puedes implementar este Módulo Contable completo con estas características y explícame cómo lo modelarías (entidades que crearías, relaciones con las demás entidades, estructura de los reportes y libros), antes de proceder con la implementación.
+
+Gracias.
