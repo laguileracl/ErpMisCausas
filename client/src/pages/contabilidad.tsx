@@ -42,12 +42,24 @@ const voucherSchema = z.object({
   total: z.coerce.number().min(0, "Total debe ser mayor a 0"),
 });
 
+const cuentaProvisoriaSchema = z.object({
+  legalCaseId: z.coerce.number().min(1, "Causa legal es requerida"),
+  rol: z.string().min(1, "ROL es requerido"),
+  debtorName: z.string().min(1, "Nombre del deudor es requerido"),
+  year: z.coerce.number().min(2020, "Año debe ser válido"),
+  month: z.coerce.number().min(1, "Mes es requerido").max(12, "Mes debe ser válido"),
+  observations: z.string().optional(),
+});
+
 export default function ContabilidadPage() {
   const { toast } = useToast();
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
   const [voucherDialogOpen, setVoucherDialogOpen] = useState(false);
+  const [cuentaProvisoriaDialogOpen, setCuentaProvisoriaDialogOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<any>(null);
   const [selectedVoucher, setSelectedVoucher] = useState<any>(null);
+  const [selectedCuentaProvisoria, setSelectedCuentaProvisoria] = useState<any>(null);
+  const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
 
   // Queries
   const { data: accounts = [], isLoading: accountsLoading } = useQuery({
@@ -56,6 +68,15 @@ export default function ContabilidadPage() {
 
   const { data: vouchers = [], isLoading: vouchersLoading } = useQuery({
     queryKey: ["/api/vouchers"],
+  });
+
+  const { data: legalCases = [] } = useQuery({
+    queryKey: ["/api/legal-cases"],
+  });
+
+  const { data: cuentasProvisoria = [], isLoading: cuentasLoading } = useQuery({
+    queryKey: ["/api/legal-cases", selectedCaseId, "cuenta-provisoria"],
+    enabled: !!selectedCaseId,
   });
 
   // Account mutations
@@ -107,6 +128,62 @@ export default function ContabilidadPage() {
     },
   });
 
+  // Cuenta Provisoria mutations
+  const createCuentaProvisoriaMutation = useMutation({
+    mutationFn: (data: any) => apiRequest("/api/cuenta-provisoria", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/legal-cases", selectedCaseId, "cuenta-provisoria"] });
+      setCuentaProvisoriaDialogOpen(false);
+      toast({ title: "Cuenta provisoria creada exitosamente" });
+    },
+    onError: () => {
+      toast({ title: "Error al crear cuenta provisoria", variant: "destructive" });
+    },
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: number; status: string }) => 
+      apiRequest(`/api/cuenta-provisoria/${id}/status`, {
+        method: "PUT",
+        body: JSON.stringify({ status }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/legal-cases", selectedCaseId, "cuenta-provisoria"] });
+      toast({ title: "Estado actualizado exitosamente" });
+    },
+    onError: () => {
+      toast({ title: "Error al actualizar estado", variant: "destructive" });
+    },
+  });
+
+  const downloadPDFMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/cuenta-provisoria/${id}/pdf`);
+      if (!response.ok) throw new Error('Error al generar PDF');
+      
+      const blob = await response.blob();
+      const filename = response.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || 'cuenta-provisoria.pdf';
+      
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    },
+    onSuccess: () => {
+      toast({ title: "PDF descargado exitosamente" });
+    },
+    onError: () => {
+      toast({ title: "Error al descargar PDF", variant: "destructive" });
+    },
+  });
+
   const updateVoucherMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) => 
       apiRequest(`/api/vouchers/${id}`, {
@@ -154,6 +231,18 @@ export default function ContabilidadPage() {
     },
   });
 
+  const cuentaProvisoriaForm = useForm({
+    resolver: zodResolver(cuentaProvisoriaSchema),
+    defaultValues: {
+      legalCaseId: undefined,
+      rol: "",
+      debtorName: "",
+      year: new Date().getFullYear(),
+      month: new Date().getMonth() + 1,
+      observations: "",
+    },
+  });
+
   // Event handlers
   const onAccountSubmit = (data: any) => {
     if (selectedAccount) {
@@ -169,6 +258,10 @@ export default function ContabilidadPage() {
     } else {
       createVoucherMutation.mutate(data);
     }
+  };
+
+  const onCuentaProvisoriaSubmit = (data: any) => {
+    createCuentaProvisoriaMutation.mutate(data);
   };
 
   const openAccountDialog = (account: any = null) => {
@@ -390,6 +483,126 @@ export default function ContabilidadPage() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="cuenta-provisoria">
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>Seleccionar Causa Legal</CardTitle>
+                    <CardDescription>
+                      Elige una causa para gestionar sus cuentas provisorias
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Select 
+                  value={selectedCaseId?.toString() || ""} 
+                  onValueChange={(value) => setSelectedCaseId(parseInt(value))}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecciona una causa legal" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(legalCases as any[]).map((legalCase: any) => (
+                      <SelectItem key={legalCase.id} value={legalCase.id.toString()}>
+                        {legalCase.caseNumber} - {legalCase.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
+
+            {selectedCaseId && (
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle>Cuentas Provisorias</CardTitle>
+                      <CardDescription>
+                        Gestiona las cuentas provisorias para la causa seleccionada
+                      </CardDescription>
+                    </div>
+                    <Button onClick={() => setCuentaProvisoriaDialogOpen(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Nueva Cuenta Provisoria
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {cuentasLoading ? (
+                    <div className="text-center py-4">Cargando cuentas provisorias...</div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ROL</TableHead>
+                          <TableHead>Deudor</TableHead>
+                          <TableHead>Período</TableHead>
+                          <TableHead>Estado</TableHead>
+                          <TableHead>Fecha Creación</TableHead>
+                          <TableHead className="text-right">Acciones</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {(cuentasProvisoria as any[]).map((cuenta: any) => (
+                          <TableRow key={cuenta.id}>
+                            <TableCell className="font-mono">{cuenta.rol}</TableCell>
+                            <TableCell className="font-medium">{cuenta.debtorName}</TableCell>
+                            <TableCell>
+                              {cuenta.month.toString().padStart(2, '0')}/{cuenta.year}
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant={
+                                  cuenta.status === 'approved' ? 'default' :
+                                  cuenta.status === 'submitted' ? 'secondary' : 'outline'
+                                }
+                              >
+                                {cuenta.status === 'draft' && 'Borrador'}
+                                {cuenta.status === 'approved' && 'Aprobado'}
+                                {cuenta.status === 'submitted' && 'Enviado'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{new Date(cuenta.createdAt).toLocaleDateString()}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => downloadPDFMutation.mutate(cuenta.id)}
+                                  disabled={downloadPDFMutation.isPending}
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                                {cuenta.status === 'draft' && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => updateStatusMutation.mutate({ 
+                                      id: cuenta.id, 
+                                      status: 'approved' 
+                                    })}
+                                    disabled={updateStatusMutation.isPending}
+                                  >
+                                    <Check className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+
         <TabsContent value="reports">
           <Card>
             <CardHeader>
@@ -422,11 +635,11 @@ export default function ContabilidadPage() {
                 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Cuenta Provisoria</CardTitle>
-                    <CardDescription>Reporte especial para tribunales</CardDescription>
+                    <CardTitle className="text-lg">Libro Mayor</CardTitle>
+                    <CardDescription>Movimientos por cuenta contable</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Button className="w-full">Generar PDF</Button>
+                    <Button className="w-full">Generar Reporte</Button>
                   </CardContent>
                 </Card>
               </div>
@@ -710,6 +923,162 @@ export default function ContabilidadPage() {
                   disabled={createVoucherMutation.isPending || updateVoucherMutation.isPending}
                 >
                   {selectedVoucher ? "Actualizar" : "Crear"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cuenta Provisoria Dialog */}
+      <Dialog open={cuentaProvisoriaDialogOpen} onOpenChange={setCuentaProvisoriaDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Nueva Cuenta Provisoria</DialogTitle>
+            <DialogDescription>
+              Crea una nueva cuenta provisoria para presentar al tribunal
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...cuentaProvisoriaForm}>
+            <form onSubmit={cuentaProvisoriaForm.handleSubmit(onCuentaProvisoriaSubmit)} className="space-y-4">
+              <FormField
+                control={cuentaProvisoriaForm.control}
+                name="legalCaseId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Causa Legal</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value?.toString()}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona una causa legal" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {(legalCases as any[]).map((legalCase: any) => (
+                          <SelectItem key={legalCase.id} value={legalCase.id.toString()}>
+                            {legalCase.caseNumber} - {legalCase.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={cuentaProvisoriaForm.control}
+                  name="rol"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>ROL</FormLabel>
+                      <FormControl>
+                        <Input placeholder="C-12345-2024" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={cuentaProvisoriaForm.control}
+                  name="debtorName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nombre del Deudor</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nombre completo del deudor" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={cuentaProvisoriaForm.control}
+                  name="year"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Año</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="2020" 
+                          max="2030" 
+                          {...field} 
+                          onChange={e => field.onChange(parseInt(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={cuentaProvisoriaForm.control}
+                  name="month"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mes</FormLabel>
+                      <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona un mes" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="1">Enero</SelectItem>
+                          <SelectItem value="2">Febrero</SelectItem>
+                          <SelectItem value="3">Marzo</SelectItem>
+                          <SelectItem value="4">Abril</SelectItem>
+                          <SelectItem value="5">Mayo</SelectItem>
+                          <SelectItem value="6">Junio</SelectItem>
+                          <SelectItem value="7">Julio</SelectItem>
+                          <SelectItem value="8">Agosto</SelectItem>
+                          <SelectItem value="9">Septiembre</SelectItem>
+                          <SelectItem value="10">Octubre</SelectItem>
+                          <SelectItem value="11">Noviembre</SelectItem>
+                          <SelectItem value="12">Diciembre</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={cuentaProvisoriaForm.control}
+                name="observations"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Observaciones</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Observaciones adicionales para la cuenta provisoria..."
+                        className="min-h-[80px]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end space-x-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setCuentaProvisoriaDialogOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={createCuentaProvisoriaMutation.isPending}
+                >
+                  {createCuentaProvisoriaMutation.isPending ? "Creando..." : "Crear Cuenta Provisoria"}
                 </Button>
               </div>
             </form>
