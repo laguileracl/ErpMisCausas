@@ -9,20 +9,6 @@ import {
 } from "../shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  
-  // Health check endpoints MUST be first for Railway deployment
-  app.get("/health", (req, res) => {
-    res.status(200).send('OK');
-  });
-
-  app.get("/api/health", (req, res) => {
-    res.status(200).json({ status: "ok" });
-  });
-
-  app.get("/", (req, res) => {
-    res.status(200).send('OK');
-  });
-
   const httpServer = createServer(app);
 
   // Authentication routes

@@ -4,13 +4,10 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
-// Health check endpoints MUST be first for Railway deployment
+// CRITICAL: Health endpoint MUST be absolutely first - no dependencies, no middleware
 app.get("/health", (req, res) => {
-  res.status(200).send('OK');
-});
-
-app.get("/api/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('OK');
 });
 
 app.use(express.json());
@@ -57,14 +54,7 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // Add health endpoints again before static serving to ensure they work in production
-  app.get("/health", (req, res) => {
-    res.status(200).send('OK');
-  });
 
-  app.get("/api/health", (req, res) => {
-    res.status(200).json({ status: "ok" });
-  });
 
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
