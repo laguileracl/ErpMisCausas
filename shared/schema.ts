@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, decimal, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, decimal, jsonb, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -318,6 +318,118 @@ export type InsertDocument = z.infer<typeof insertDocumentSchema>;
 export type InsertActivity = z.infer<typeof insertActivitySchema>;
 export type InsertTask = z.infer<typeof insertTaskSchema>;
 export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
+
+// Notifications system
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  type: varchar("type", { length: 50 }).notNull(), // 'task_due', 'case_update', 'activity_added', etc.
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  entityType: varchar("entity_type", { length: 50 }), // 'task', 'legal_case', 'activity'
+  entityId: integer("entity_id"),
+  isRead: boolean("is_read").default(false).notNull(),
+  isEmailSent: boolean("is_email_sent").default(false).notNull(),
+  priority: varchar("priority", { length: 20 }).default("normal").notNull(), // 'low', 'normal', 'high', 'urgent'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  readAt: timestamp("read_at"),
+});
+
+// User notification preferences
+export const userNotificationPreferences = pgTable("user_notification_preferences", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  notificationType: varchar("notification_type", { length: 50 }).notNull(),
+  inAppEnabled: boolean("in_app_enabled").default(true).notNull(),
+  emailEnabled: boolean("email_enabled").default(true).notNull(),
+  daysBeforeDue: integer("days_before_due").default(3), // For task due notifications
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Security logs for login attempts and security events
+export const securityLogs = pgTable("security_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  eventType: varchar("event_type", { length: 50 }).notNull(), // 'login_success', 'login_failed', 'password_change', 'session_timeout'
+  ipAddress: varchar("ip_address", { length: 45 }),
+  userAgent: text("user_agent"),
+  details: jsonb("details"), // Additional event details
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+});
+
+// User sessions for better session management
+export const userSessions = pgTable("user_sessions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  sessionToken: varchar("session_token", { length: 255 }).notNull().unique(),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  userAgent: text("user_agent"),
+  isActive: boolean("is_active").default(true).notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  lastActivityAt: timestamp("last_activity_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Update users table to include security fields
+export const usersSecurityUpdate = pgTable("users_security", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  passwordSalt: varchar("password_salt", { length: 255 }).notNull(),
+  lastPasswordChange: timestamp("last_password_change").defaultNow().notNull(),
+  failedLoginAttempts: integer("failed_login_attempts").default(0).notNull(),
+  lockedUntil: timestamp("locked_until"),
+  lastLoginAt: timestamp("last_login_at"),
+  lastLoginIp: varchar("last_login_ip", { length: 45 }),
+  sessionTimeout: integer("session_timeout").default(3600).notNull(), // seconds
+  requirePasswordChange: boolean("require_password_change").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Insert schemas for new tables
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  createdAt: true,
+  readAt: true,
+});
+
+export const insertUserNotificationPreferenceSchema = createInsertSchema(userNotificationPreferences).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSecurityLogSchema = createInsertSchema(securityLogs).omit({
+  id: true,
+  timestamp: true,
+});
+
+export const insertUserSessionSchema = createInsertSchema(userSessions).omit({
+  id: true,
+  createdAt: true,
+  lastActivityAt: true,
+});
+
+export const insertUsersSecuritySchema = createInsertSchema(usersSecurityUpdate).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Types for new tables
+export type Notification = typeof notifications.$inferSelect;
+export type UserNotificationPreference = typeof userNotificationPreferences.$inferSelect;
+export type SecurityLog = typeof securityLogs.$inferSelect;
+export type UserSession = typeof userSessions.$inferSelect;
+export type UsersSecurity = typeof usersSecurityUpdate.$inferSelect;
+
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type InsertUserNotificationPreference = z.infer<typeof insertUserNotificationPreferenceSchema>;
+export type InsertSecurityLog = z.infer<typeof insertSecurityLogSchema>;
+export type InsertUserSession = z.infer<typeof insertUserSessionSchema>;
+export type InsertUsersSecurity = z.infer<typeof insertUsersSecuritySchema>;
 
 // Authentication schema
 export const loginSchema = z.object({

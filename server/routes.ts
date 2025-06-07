@@ -8,8 +8,11 @@ import {
   insertUserSchema, insertClientSchema, insertCompanySchema, insertContactSchema,
   insertProviderSchema, insertCourtSchema, insertCaseTypeSchema, insertStudioRoleSchema,
   insertLegalCaseSchema, insertCaseRoleSchema, insertProcessStageSchema, insertDocumentSchema,
-  insertActivitySchema, insertTaskSchema, insertAuditLogSchema, loginSchema
+  insertActivitySchema, insertTaskSchema, insertAuditLogSchema, loginSchema,
+  insertNotificationSchema, insertUserNotificationPreferenceSchema
 } from "@shared/schema";
+import { notificationService } from "./notification-service";
+import { securityService } from "./security-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
