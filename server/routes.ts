@@ -14,6 +14,8 @@ import {
 import { notificationService } from "./notification-service";
 import { securityService } from "./security-service";
 import { accountingService } from "./accounting-service";
+import { cuentaProvisoriaService } from "./cuenta-provisoria-service";
+import { pdfGeneratorService } from "./pdf-generator-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   

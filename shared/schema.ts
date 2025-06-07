@@ -445,10 +445,12 @@ export const accounts = pgTable("accounts", {
   id: serial("id").primaryKey(),
   code: text("code").notNull().unique(),
   name: text("name").notNull(),
-  type: text("type").notNull(),
+  type: text("type").notNull(), // asset, liability, equity, income, expense
   category: text("category").notNull(),
   parentId: integer("parent_id"),
+  level: integer("level").notNull().default(1), // 1=Mayor, 2=Submayores, 3=Analíticas
   isActive: boolean("is_active").default(true),
+  allowsMovement: boolean("allows_movement").default(true), // Si permite asientos directos
   description: text("description"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -489,16 +491,77 @@ export const voucherLines = pgTable("voucher_lines", {
   lineOrder: integer("line_order").notNull(),
 });
 
-// Simplified insert schemas
-export const insertAccountSchema = createInsertSchema(accounts);
-export const insertVoucherSchema = createInsertSchema(vouchers);
-export const insertVoucherLineSchema = createInsertSchema(voucherLines);
+// Cuenta Provisoria - Tabla específica para reportes tribunales
+export const cuentaProvisoria = pgTable("cuenta_provisoria", {
+  id: serial("id").primaryKey(),
+  legalCaseId: integer("legal_case_id").notNull(),
+  rol: text("rol").notNull(), // ROL del tribunal
+  debtorName: text("debtor_name").notNull(),
+  period: text("period").notNull(), // YYYY-MM format
+  year: integer("year").notNull(),
+  month: integer("month").notNull(),
+  totalIngresos: integer("total_ingresos").notNull().default(0),
+  totalEgresos: integer("total_egresos").notNull().default(0),
+  saldoAnterior: integer("saldo_anterior").notNull().default(0),
+  saldoFinal: integer("saldo_final").notNull().default(0),
+  observations: text("observations"),
+  status: text("status").notNull().default("draft"), // draft, approved, submitted
+  generatedAt: timestamp("generated_at").defaultNow(),
+  createdBy: integer("created_by").notNull(),
+});
 
-// Types
+// Detalle de movimientos para Cuenta Provisoria
+export const cuentaProvisoriaMovements = pgTable("cuenta_provisoria_movements", {
+  id: serial("id").primaryKey(),
+  cuentaProvisoriaId: integer("cuenta_provisoria_id").notNull(),
+  date: timestamp("date").notNull(),
+  description: text("description").notNull(),
+  documentType: text("document_type"), // boleta, factura, recibo, etc.
+  documentNumber: text("document_number"),
+  tipo: text("tipo").notNull(), // ingreso, egreso
+  amount: integer("amount").notNull(),
+  balance: integer("balance").notNull(), // saldo acumulado
+  accountId: integer("account_id"), // relación con plan de cuentas
+  voucherId: integer("voucher_id"), // relación con comprobante origen
+  orderIndex: integer("order_index").notNull(),
+});
+
+// Insert schemas for accounting tables
+export const insertAccountSchema = createInsertSchema(accounts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertVoucherSchema = createInsertSchema(vouchers).omit({
+  id: true,
+  voucherNumber: true, // Auto-generated
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertVoucherLineSchema = createInsertSchema(voucherLines).omit({
+  id: true,
+});
+
+export const insertCuentaProvisoriaSchema = createInsertSchema(cuentaProvisoria).omit({
+  id: true,
+  generatedAt: true,
+});
+
+export const insertCuentaProvisoriaMovementSchema = createInsertSchema(cuentaProvisoriaMovements).omit({
+  id: true,
+});
+
+// Types for accounting tables
 export type Account = typeof accounts.$inferSelect;
 export type Voucher = typeof vouchers.$inferSelect;
 export type VoucherLine = typeof voucherLines.$inferSelect;
+export type CuentaProvisoria = typeof cuentaProvisoria.$inferSelect;
+export type CuentaProvisoriaMovement = typeof cuentaProvisoriaMovements.$inferSelect;
 
 export type InsertAccount = z.infer<typeof insertAccountSchema>;
 export type InsertVoucher = z.infer<typeof insertVoucherSchema>;
 export type InsertVoucherLine = z.infer<typeof insertVoucherLineSchema>;
+export type InsertCuentaProvisoria = z.infer<typeof insertCuentaProvisoriaSchema>;
+export type InsertCuentaProvisoriaMovement = z.infer<typeof insertCuentaProvisoriaMovementSchema>;
