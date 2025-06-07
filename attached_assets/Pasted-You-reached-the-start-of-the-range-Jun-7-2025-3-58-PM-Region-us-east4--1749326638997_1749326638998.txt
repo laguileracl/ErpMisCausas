@@ -1,0 +1,107 @@
+You reached the start of the range → Jun 7, 2025 3:58 PM
+
+ 
+
+[Region: us-east4]
+
+=========================
+
+Using Detected Dockerfile
+
+=========================
+
+
+context: 7jtc-Gw2t
+
+[internal] load build definition from Dockerfile
+
+[internal] load build definition from Dockerfile  ✔ 0ms
+
+[internal] load build definition from Dockerfile
+
+[internal] load build definition from Dockerfile  ✔ 11ms
+
+[internal] load metadata for docker.io/library/node:20-alpine
+
+[internal] load metadata for docker.io/library/node:20-alpine  ✔ 81ms
+
+[internal] load .dockerignore
+
+[internal] load .dockerignore  ✔ 0ms
+
+[internal] load .dockerignore
+
+[internal] load .dockerignore  ✔ 10ms
+
+[internal] load build context
+
+[3/8] WORKDIR /app
+
+[2/8] RUN apk add --no-cache     chromium     nss     freetype     freetype-dev     harfbuzz     ca-certificates     ttf-freefont     && rm -rf /var/cache/apk/*
+
+[1/8] FROM docker.io/library/node:20-alpine@sha256:d3507a213936fe4ef54760a186e113db5188472d9efdf491686bd94580a1c1e8
+
+[8/8] RUN chown -R erp:nodejs /app
+
+[7/8] RUN addgroup -g 1001 -S nodejs &&     adduser -S erp -u 1001 -G nodejs
+
+[6/8] COPY . .
+
+[5/8] RUN npm ci
+
+[4/8] COPY package*.json ./
+
+[1/8] FROM docker.io/library/node:20-alpine@sha256:d3507a213936fe4ef54760a186e113db5188472d9efdf491686bd94580a1c1e8
+
+[internal] load build context  ✔ 0ms
+
+[1/8] FROM docker.io/library/node:20-alpine@sha256:d3507a213936fe4ef54760a186e113db5188472d9efdf491686bd94580a1c1e8  ✔ 6ms
+
+[internal] load build context
+
+[internal] load build context  ✔ 40ms
+
+[2/8] RUN apk add --no-cache     chromium     nss     freetype     freetype-dev     harfbuzz     ca-certificates     ttf-freefont     && rm -rf /var/cache/apk/*  ✔ 0ms – CACHED
+
+[3/8] WORKDIR /app  ✔ 0ms – CACHED
+
+[4/8] COPY package*.json ./  ✔ 0ms – CACHED
+
+[5/8] RUN npm ci  ✔ 0ms – CACHED
+
+[6/8] COPY . .
+
+[6/8] COPY . .  ✔ 3s
+
+[7/8] RUN addgroup -g 1001 -S nodejs &&     adduser -S erp -u 1001 -G nodejs
+
+[7/8] RUN addgroup -g 1001 -S nodejs &&     adduser -S erp -u 1001 -G nodejs  ✔ 1s
+
+[8/8] RUN chown -R erp:nodejs /app
+
+[8/8] RUN chown -R erp:nodejs /app  ✔ 1m 31s
+
+exporting to docker image format
+
+exporting to image
+
+[auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com
+
+[auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com  ✔ 0ms
+
+importing to docker
+
+importing to docker  ✔ 18s
+
+Build time: 120.40 seconds
+
+ 
+
+====================
+
+Starting Healthcheck
+
+====================
+
+
+Path: /health
