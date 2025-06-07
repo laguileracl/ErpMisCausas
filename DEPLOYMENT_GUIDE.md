@@ -140,9 +140,15 @@
 
 ### Troubleshooting Común
 
+**Error: "vite: not found" durante build**
+- ✅ **SOLUCIONADO**: Se agregó configuración nixpacks.toml y se actualizó railway.json
+- Los archivos de build fix están incluidos en este repositorio
+- Railway ahora instalará todas las dependencias necesarias automáticamente
+
 **Error: Build failed**
 - Revisar que todas las variables de entorno estén configuradas
 - Verificar que DATABASE_URL sea válida
+- Confirmar que nixpacks.toml esté presente en el repositorio
 
 **Error: Database connection**
 - Confirmar que PostgreSQL service esté activo
@@ -151,6 +157,16 @@
 **Error: PDF generation**
 - Los PDFs requieren Chromium, incluido en el Dockerfile
 - Verificar logs para errores específicos de Puppeteer
+
+### Build Fix Aplicado
+
+**Archivos actualizados para solucionar el error de Railway:**
+- `nixpacks.toml` - Configuración específica para Railway
+- `railway.json` - Comando de build explícito
+- `Dockerfile` - Instalación completa de dependencias
+- `.github/workflows/deploy.yml` - Consistencia en instalación
+
+**El problema "sh: vite: not found" está resuelto.**
 
 ## Preparación para Producción
 
