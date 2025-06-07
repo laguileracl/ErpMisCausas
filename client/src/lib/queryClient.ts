@@ -7,12 +7,24 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+const getApiUrl = (url: string): string => {
+  // In development, use local server
+  if (import.meta.env.DEV) {
+    return url;
+  }
+  
+  // In production, use Railway API
+  const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://erp-miscausas-production.up.railway.app';
+  return url.startsWith('/api') ? `${apiBaseUrl}${url}` : url;
+};
+
 export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
+  const fullUrl = getApiUrl(url);
+  const res = await fetch(fullUrl, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
@@ -29,7 +41,9 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
+    const url = queryKey[0] as string;
+    const fullUrl = getApiUrl(url);
+    const res = await fetch(fullUrl, {
       credentials: "include",
     });
 
