@@ -23,8 +23,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install all dependencies (including devDependencies for build)
-RUN npm ci
+# Install all dependencies including devDependencies (needed for tsx and vite)
+RUN npm ci --include=dev
 
 # Copy source code
 COPY . .

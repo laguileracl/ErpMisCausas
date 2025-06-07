@@ -1,0 +1,103 @@
+    at packageResolve (node:internal/modules/esm/resolve:873:9)
+
+    at moduleResolve (node:internal/modules/esm/resolve:946:18)
+
+    at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+
+    at nextResolve (node:internal/modules/esm/hooks:864:28)
+
+    at resolveBase (file:///home/erp/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1749326832475:2:3212)
+
+    at resolveDirectory (file:///home/erp/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1749326832475:2:3584)
+
+    at resolveTsPaths (file:///home/erp/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1749326832475:2:4073)
+
+    at async resolve (file:///home/erp/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1749326832475:2:4441)
+
+    at async nextResolve (node:internal/modules/esm/hooks:864:22)
+
+    at async Hooks.resolve (node:internal/modules/esm/hooks:306:24) {
+
+  code: 'ERR_MODULE_NOT_FOUND'
+
+}
+
+ 
+
+Node.js v20.19.2
+
+ 
+
+node:internal/modules/run_main:123
+
+    triggerUncaughtException(
+
+    ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /app/server/vite.ts
+
+    at packageResolve (node:internal/modules/esm/resolve:873:9)
+
+    at moduleResolve (node:internal/modules/esm/resolve:946:18)
+
+    at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+
+    at nextResolve (node:internal/modules/esm/hooks:864:28)
+
+    at resolveBase (file:///home/erp/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1749326834521:2:3212)
+
+    at resolveDirectory (file:///home/erp/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1749326834521:2:3584)
+
+    at resolveTsPaths (file:///home/erp/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1749326834521:2:4073)
+
+    at async resolve (file:///home/erp/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1749326834521:2:4441)
+
+    at async nextResolve (node:internal/modules/esm/hooks:864:22)
+
+    at async Hooks.resolve (node:internal/modules/esm/hooks:306:24) {
+
+  code: 'ERR_MODULE_NOT_FOUND'
+
+}
+
+ 
+
+Node.js v20.19.2
+
+ 
+
+node:internal/modules/run_main:123
+
+    triggerUncaughtException(
+
+    ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /app/server/vite.ts
+
+    at packageResolve (node:internal/modules/esm/resolve:873:9)
+
+    at moduleResolve (node:internal/modules/esm/resolve:946:18)
+
+    at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+
+    at nextResolve (node:internal/modules/esm/hooks:864:28)
+
+    at resolveBase (file:///home/erp/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1749326836882:2:3212)
+
+    at resolveDirectory (file:///home/erp/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1749326836882:2:3584)
+
+    at resolveTsPaths (file:///home/erp/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1749326836882:2:4073)
+
+    at async resolve (file:///home/erp/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1749326836882:2:4441)
+
+    at async nextResolve (node:internal/modules/esm/hooks:864:22)
+
+    at async Hooks.resolve (node:internal/modules/esm/hooks:306:24) {
+
+  code: 'ERR_MODULE_NOT_FOUND'
+
+}
+
+ 
+
+Node.js v20.19.2
