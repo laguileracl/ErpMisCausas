@@ -19,6 +19,37 @@ import { pdfGeneratorService } from "./pdf-generator-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
+  // Health check endpoints MUST be first and bypass all middleware
+  app.get("/health", (req, res) => {
+    try {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ status: "ok" }));
+    } catch (error) {
+      res.writeHead(500, { 'Content-Type': 'text/plain' });
+      res.end('Internal Server Error');
+    }
+  });
+
+  app.get("/api/health", (req, res) => {
+    try {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ status: "ok" }));
+    } catch (error) {
+      res.writeHead(500, { 'Content-Type': 'text/plain' });
+      res.end('Internal Server Error');
+    }
+  });
+
+  app.get("/", (req, res) => {
+    try {
+      res.writeHead(200, { 'Content-Type': 'text/plain' });
+      res.end('OK');
+    } catch (error) {
+      res.writeHead(500, { 'Content-Type': 'text/plain' });
+      res.end('Error');
+    }
+  });
+
   // Configure multer for file uploads
   const upload = multer({ 
     storage: multer.memoryStorage(),
@@ -1294,31 +1325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Health check endpoints for deployment platforms
-  app.get("/health", (req, res) => {
-    res.status(200).json({
-      status: "ok",
-      timestamp: new Date().toISOString(),
-      version: "1.0.0",
-      environment: process.env.NODE_ENV || "development",
-      database: process.env.DATABASE_URL ? "connected" : "not configured"
-    });
-  });
 
-  app.get("/api/health", (req, res) => {
-    res.status(200).json({
-      status: "ok",
-      timestamp: new Date().toISOString(),
-      version: "1.0.0",
-      environment: process.env.NODE_ENV || "development",
-      database: process.env.DATABASE_URL ? "connected" : "not configured"
-    });
-  });
-
-  app.get("/", (req, res) => {
-    // Simple root endpoint for basic healthcheck
-    res.status(200).send("ERP MisCausas is running");
-  });
 
   const httpServer = createServer(app);
   return httpServer;
