@@ -265,7 +265,7 @@ export default function DocumentosPage() {
           <Dialog open={isGenerateDocumentOpen} onOpenChange={setIsGenerateDocumentOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
-                <Template className="mr-2 h-4 w-4" />
+                <FileEdit className="mr-2 h-4 w-4" />
                 Generar Documento
               </Button>
             </DialogTrigger>
@@ -775,7 +775,7 @@ export default function DocumentosPage() {
                     <div className="flex justify-between items-start">
                       <div className="flex items-start space-x-3">
                         <div className="p-2 rounded-lg bg-green-500">
-                          <Template className="h-4 w-4 text-white" />
+                          <FileEdit className="h-4 w-4 text-white" />
                         </div>
                         <div className="flex-1">
                           <CardTitle className="text-lg">{document.title}</CardTitle>
