@@ -76,12 +76,14 @@ export const contacts = pgTable("contacts", {
 // Relationship between contacts and companies
 export const companyContacts = pgTable("company_contacts", {
   id: serial("id").primaryKey(),
-  companyId: integer("company_id").references(() => companies.id).notNull(),
-  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  companyId: integer("company_id").references(() => companies.id, { onDelete: "cascade" }).notNull(),
+  contactId: integer("contact_id").references(() => contacts.id, { onDelete: "cascade" }).notNull(),
   role: text("role"), // 'manager' | 'representative' | 'accountant' | etc.
+  isPrimary: boolean("is_primary").notNull().default(false),
   isActive: boolean("is_active").notNull().default(true),
   startDate: timestamp("start_date").notNull().defaultNow(),
   endDate: timestamp("end_date"),
+  notes: text("notes"),
 });
 
 // Providers
@@ -264,6 +266,7 @@ export const insertUserSchema = createInsertSchema(users).omit({ id: true, creat
 export const insertClientSchema = createInsertSchema(clients).omit({ id: true, createdAt: true });
 export const insertCompanySchema = createInsertSchema(companies).omit({ id: true, createdAt: true });
 export const insertContactSchema = createInsertSchema(contacts).omit({ id: true, createdAt: true });
+export const insertCompanyContactSchema = createInsertSchema(companyContacts).omit({ id: true, startDate: true });
 export const insertProviderSchema = createInsertSchema(providers).omit({ id: true, createdAt: true });
 export const insertCourtSchema = createInsertSchema(courts).omit({ id: true });
 export const insertCaseTypeSchema = createInsertSchema(caseTypes).omit({ id: true });
@@ -282,6 +285,7 @@ export type User = typeof users.$inferSelect;
 export type Client = typeof clients.$inferSelect;
 export type Company = typeof companies.$inferSelect;
 export type Contact = typeof contacts.$inferSelect;
+export type CompanyContact = typeof companyContacts.$inferSelect;
 export type Provider = typeof providers.$inferSelect;
 export type Court = typeof courts.$inferSelect;
 export type CaseType = typeof caseTypes.$inferSelect;
@@ -299,6 +303,7 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertClient = z.infer<typeof insertClientSchema>;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
 export type InsertContact = z.infer<typeof insertContactSchema>;
+export type InsertCompanyContact = z.infer<typeof insertCompanyContactSchema>;
 export type InsertProvider = z.infer<typeof insertProviderSchema>;
 export type InsertCourt = z.infer<typeof insertCourtSchema>;
 export type InsertCaseType = z.infer<typeof insertCaseTypeSchema>;
