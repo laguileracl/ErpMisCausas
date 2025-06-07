@@ -17,6 +17,7 @@ import Auditoria from "@/pages/auditoria";
 import Importacion from "@/pages/importacion";
 import Reportes from "@/pages/reportes";
 import Notificaciones from "@/pages/notificaciones";
+import Contabilidad from "@/pages/contabilidad";
 import { useAuth, AuthProvider } from "@/lib/auth";
 
 function Router() {
@@ -57,6 +58,7 @@ function Router() {
       <Route path="/importacion" component={Importacion} />
       <Route path="/reportes" component={Reportes} />
       <Route path="/notificaciones" component={Notificaciones} />
+      <Route path="/contabilidad" component={Contabilidad} />
       <Route component={NotFound} />
     </Switch>
   );

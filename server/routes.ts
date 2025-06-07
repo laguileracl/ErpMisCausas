@@ -13,6 +13,7 @@ import {
 } from "@shared/schema";
 import { notificationService } from "./notification-service";
 import { securityService } from "./security-service";
+import { accountingService } from "./accounting-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -1009,6 +1010,123 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: "Error al cerrar sesión", error });
+    }
+  });
+
+  // Accounting Routes
+  // Accounts
+  app.get("/api/accounts", authenticateUser, async (req, res) => {
+    try {
+      const accounts = await accountingService.getAccounts();
+      res.json(accounts);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener cuentas", error });
+    }
+  });
+
+  app.post("/api/accounts", authenticateUser, async (req, res) => {
+    try {
+      const account = await accountingService.createAccount(req.body);
+      res.status(201).json(account);
+    } catch (error) {
+      res.status(500).json({ message: "Error al crear cuenta", error });
+    }
+  });
+
+  app.put("/api/accounts/:id", authenticateUser, async (req, res) => {
+    try {
+      const account = await accountingService.updateAccount(parseInt(req.params.id), req.body);
+      res.json(account);
+    } catch (error) {
+      res.status(500).json({ message: "Error al actualizar cuenta", error });
+    }
+  });
+
+  // Vouchers
+  app.get("/api/vouchers", authenticateUser, async (req, res) => {
+    try {
+      const vouchers = await accountingService.getVouchers();
+      res.json(vouchers);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener comprobantes", error });
+    }
+  });
+
+  app.get("/api/vouchers/:id", authenticateUser, async (req, res) => {
+    try {
+      const voucher = await accountingService.getVoucherById(parseInt(req.params.id));
+      if (!voucher) {
+        return res.status(404).json({ message: "Comprobante no encontrado" });
+      }
+      res.json(voucher);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener comprobante", error });
+    }
+  });
+
+  app.post("/api/vouchers", authenticateUser, async (req: any, res) => {
+    try {
+      const voucherData = { ...req.body, createdBy: req.user.id };
+      const voucher = await accountingService.createVoucher(voucherData);
+      res.status(201).json(voucher);
+    } catch (error) {
+      res.status(500).json({ message: "Error al crear comprobante", error });
+    }
+  });
+
+  app.put("/api/vouchers/:id", authenticateUser, async (req, res) => {
+    try {
+      const voucher = await accountingService.updateVoucher(parseInt(req.params.id), req.body);
+      res.json(voucher);
+    } catch (error) {
+      res.status(500).json({ message: "Error al actualizar comprobante", error });
+    }
+  });
+
+  app.delete("/api/vouchers/:id", authenticateUser, async (req, res) => {
+    try {
+      await accountingService.deleteVoucher(parseInt(req.params.id));
+      res.json({ message: "Comprobante eliminado exitosamente" });
+    } catch (error) {
+      res.status(500).json({ message: "Error al eliminar comprobante", error });
+    }
+  });
+
+  // Voucher Lines
+  app.get("/api/vouchers/:id/lines", authenticateUser, async (req, res) => {
+    try {
+      const lines = await accountingService.getVoucherLines(parseInt(req.params.id));
+      res.json(lines);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener líneas del comprobante", error });
+    }
+  });
+
+  app.post("/api/vouchers/:id/lines", authenticateUser, async (req, res) => {
+    try {
+      const lineData = { ...req.body, voucherId: parseInt(req.params.id) };
+      const line = await accountingService.createVoucherLine(lineData);
+      res.status(201).json(line);
+    } catch (error) {
+      res.status(500).json({ message: "Error al crear línea del comprobante", error });
+    }
+  });
+
+  app.put("/api/voucher-lines/:id", authenticateUser, async (req, res) => {
+    try {
+      const line = await accountingService.updateVoucherLine(parseInt(req.params.id), req.body);
+      res.json(line);
+    } catch (error) {
+      res.status(500).json({ message: "Error al actualizar línea del comprobante", error });
+    }
+  });
+
+  app.delete("/api/voucher-lines/:id", authenticateUser, async (req, res) => {
+    try {
+      await accountingService.deleteVoucherLine(parseInt(req.params.id));
+      res.json({ message: "Línea del comprobante eliminada exitosamente" });
+    } catch (error) {
+      res.status(500).json({ message: "Error al eliminar línea del comprobante", error });
     }
   });
 
