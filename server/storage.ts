@@ -340,6 +340,8 @@ export class MemStorage implements IStorage {
     const user: User = {
       ...insertUser,
       id,
+      isActive: insertUser.isActive ?? true,
+      roleId: insertUser.roleId ?? null,
       lastLogin: null,
       createdAt: new Date()
     };

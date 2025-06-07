@@ -23,51 +23,39 @@ export function useAuth() {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   
-  const { data: user, isLoading } = useQuery<User | null>({
-    queryKey: ["/api/auth/me"],
-    queryFn: async () => {
-      try {
-        const response = await fetch("/api/auth/me", {
-          credentials: "include",
-        });
-        
-        if (response.status === 401) {
-          return null;
-        }
-        
-        if (!response.ok) {
-          throw new Error("Failed to fetch user");
-        }
-        
-        const data = await response.json();
-        return data.user;
-      } catch (error) {
-        return null;
-      }
-    },
-    retry: false,
-    staleTime: Infinity,
+  const { data: user, isLoading } = useQuery({
+    queryKey: ['/api/user'],
+    retry: false
   });
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginRequest) => {
-      const response = await apiRequest("POST", "/api/auth/login", credentials);
-      const data = await response.json();
-      return data.user;
+      const response = await apiRequest("/api/login", {
+        method: "POST",
+        body: JSON.stringify(credentials),
+      });
+      if (!response.ok) {
+        throw new Error("Login failed");
+      }
+      return response.json();
     },
-    onSuccess: (user) => {
-      queryClient.setQueryData(["/api/auth/me"], user);
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
     },
   });
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("POST", "/api/auth/logout");
+      const response = await apiRequest("/api/logout", {
+        method: "POST",
+      });
+      if (!response.ok) {
+        throw new Error("Logout failed");
+      }
     },
     onSuccess: () => {
-      queryClient.setQueryData(["/api/auth/me"], null);
-      queryClient.clear();
+      queryClient.setQueryData(['/api/user'], null);
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
     },
   });
 
@@ -79,15 +67,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await logoutMutation.mutateAsync();
   };
 
+  const contextValue: AuthContextType = {
+    user: user || null,
+    isLoading,
+    login,
+    logout
+  };
+
   return (
-    <AuthContext.Provider 
-      value={{ 
-        user: user || null, 
-        isLoading, 
-        login, 
-        logout 
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
@@ -99,16 +87,12 @@ export function useAuthUser() {
   return user;
 }
 
-// Hook for checking permissions
+// Hook for permission checking
 export function usePermissions() {
   const { user } = useAuth();
-  
-  const hasPermission = (permission: string) => {
-    if (!user?.roleId) return false;
-    // This would be expanded with actual role-based permission checking
-    // For now, assume all authenticated users have basic permissions
-    return true;
+  return {
+    isAdmin: user?.roleId === 1,
+    canEditCases: user?.roleId === 1 || user?.roleId === 2,
+    canViewReports: user?.roleId === 1 || user?.roleId === 2,
   };
-
-  return { hasPermission };
 }

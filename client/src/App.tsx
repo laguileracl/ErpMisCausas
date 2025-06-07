@@ -6,7 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
-import { useAuth } from "@/lib/auth";
+import { useAuth, AuthProvider } from "@/lib/auth";
 
 function Router() {
   const { user, isLoading } = useAuth();
