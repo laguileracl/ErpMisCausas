@@ -50,19 +50,19 @@ export function Sidebar() {
 
   const managementItems = [
     {
-      href: "/documents",
+      href: "/actividades",
+      icon: "fas fa-clipboard-list",
+      label: "Actividades",
+      badge: null,
+    },
+    {
+      href: "/documentos",
       icon: "fas fa-file-alt",
       label: "Documentos",
       badge: null,
     },
     {
-      href: "/calendar",
-      icon: "fas fa-calendar",
-      label: "Calendario",
-      badge: null,
-    },
-    {
-      href: "/tasks",
+      href: "/tareas",
       icon: "fas fa-tasks",
       label: "Tareas y Alarmas",
       badge: "5",

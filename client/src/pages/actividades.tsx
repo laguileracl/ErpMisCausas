@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { insertActivitySchema, type Activity, type LegalCase, type User } from "@shared/schema";
+import { insertActivitySchema, type Activity, type LegalCase, type User as UserType } from "@shared/schema";
 import { z } from "zod";
 
 const activityTypeMap = {
@@ -169,7 +169,7 @@ export default function ActividadesPage() {
   };
 
   const getUserName = (id: number) => {
-    const user = Array.isArray(users) ? users.find((u: User) => u.id === id) : null;
+    const user = Array.isArray(users) ? users.find((u: UserType) => u.id === id) : null;
     return user ? `${user.firstName} ${user.lastName}` : "Usuario no encontrado";
   };
 
