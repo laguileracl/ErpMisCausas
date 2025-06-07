@@ -51,23 +51,16 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     const url = queryKey[0] as string;
     const fullUrl = getApiUrl(url);
-    
-    try {
-      const res = await fetch(fullUrl, {
-        credentials: "include",
-      });
+    const res = await fetch(fullUrl, {
+      credentials: "include",
+    });
 
-      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-        return null;
-      }
-
-      await throwIfResNotOk(res);
-      return await res.json();
-    } catch (error) {
-      // If API fails, return mock data for demo purposes
-      console.warn(`API request failed for ${url}, using mock data`);
-      return getMockResponse(url);
+    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+      return null;
     }
+
+    await throwIfResNotOk(res);
+    return await res.json();
   };
 
 export const queryClient = new QueryClient({
