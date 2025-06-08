@@ -3,11 +3,6 @@
   "outputDirectory": "client/dist",
   "installCommand": "npm install",
   "framework": "vite",
-  "functions": {
-    "api/auth/login.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/(.*)",
